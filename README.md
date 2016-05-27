@@ -2,6 +2,8 @@
 
 ![Architecture](docs/k8s_yarn_architecture.png)
 
+#### [Initial Design Document (Google Docs)](https://docs.google.com/document/d/1ZoKLWkHiZZPP-394aUTIOE9R7Vx88pgOC8NE0hkVn24/edit?usp=sharing)
+
 ## Running locally
 
 Use [`kid`](https://github.com/vyshane/kid) to start k8s cluster locally with [Docker Machine](https://www.docker.com/products/docker-toolbox)
