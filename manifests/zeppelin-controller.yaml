@@ -1,0 +1,31 @@
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: zeppelin-controller
+  namespace: yarn-cluster
+spec:
+  replicas: 1
+  selector:
+    component: zeppelin
+  template:
+    metadata:
+      labels:
+        component: zeppelin
+    spec:
+      containers:
+        - name: zeppelin
+          image: dylanmei/zeppelin:0.6.0
+          resources:
+            requests:
+              memory: "2048Mi"
+              cpu: "2000m"
+            limits:
+              memory: "4096Mi"
+              cpu: "4000m"
+          volumeMounts:
+            - name: hadoop-config
+              mountPath: /usr/hadoop-2.6.3/etc/hadoop
+      volumes:
+        - name: hadoop-config
+          configMap:
+            name: hadoop-config

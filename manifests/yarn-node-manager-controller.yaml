@@ -1,0 +1,35 @@
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: yarn-node-manager-controller
+  namespace: yarn-cluster
+spec:
+  replicas: 1
+  selector:
+    component: yarn-node-manager
+  template:
+    metadata:
+      labels:
+        component: yarn-node-manager
+    spec:
+      containers:
+        - name: yarn-node-manager
+          image: sequenceiq/hadoop-docker:2.6.0
+          command:
+             - "/bin/bash"
+             - "/tmp/hadoop-config/bootstrap.sh"
+             - "-d"
+          resources:
+            requests:
+              memory: "1024Mi"
+              cpu: "100m"
+            limits:
+              memory: "2048Mi"
+              cpu: "2000m"
+          volumeMounts:
+            - name: hadoop-config
+              mountPath: /tmp/hadoop-config
+      volumes:
+        - name: hadoop-config
+          configMap:
+            name: hadoop-config

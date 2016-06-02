@@ -1,0 +1,20 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: yarn-resource-manager
+  namespace: yarn-cluster
+spec:
+  type: ClusterIP
+  sessionAffinity: ClientIP
+  selector:
+    component: yarn-resource-manager
+  ports:
+  - name: webui
+    port: 8088
+    protocol: TCP
+  - name: yarn1
+    port: 8031
+    protocol: TCP
+  - name: yarn2
+    port: 8032
+    protocol: TCP

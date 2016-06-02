@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: hdfs-namenode
+  namespace: yarn-cluster
+spec:
+  type: ClusterIP
+  sessionAffinity: ClientIP
+  selector:
+    component: hdfs-namenode
+  ports:
+  - name: dfs
+    port: 9000
+    protocol: TCP

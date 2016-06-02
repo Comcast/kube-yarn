@@ -1,0 +1,35 @@
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: hdfs-namenode-controller
+  namespace: yarn-cluster
+spec:
+  replicas: 1
+  selector:
+    component: hdfs-namenode
+  template:
+    metadata:
+      labels:
+        component: hdfs-namenode
+    spec:
+      containers:
+        - name: hdfs-namenode
+          image: sequenceiq/hadoop-docker:2.6.0
+          command:
+             - "/bin/bash"
+             - "/tmp/hadoop-config/bootstrap.sh"
+             - "-d"
+          resources:
+            requests:
+              memory: "1024Mi"
+              cpu: "100m"
+            limits:
+              memory: "2048Mi"
+              cpu: "1000m"
+          volumeMounts:
+            - name: hadoop-config
+              mountPath: /tmp/hadoop-config
+      volumes:
+        - name: hadoop-config
+          configMap:
+            name: hadoop-config

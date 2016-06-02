@@ -1,0 +1,14 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: zeppelin
+  namespace: yarn-cluster
+spec:
+  type: ClusterIP
+  sessionAffinity: ClientIP
+  selector:
+    component: zeppelin
+  ports:
+  - name: notebook
+    port: 8080
+    protocol: TCP
