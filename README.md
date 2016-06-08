@@ -6,24 +6,21 @@
 
 ## Running locally
 
-Use [`kid`](https://github.com/vyshane/kid) to start k8s cluster locally with [Docker Machine](https://www.docker.com/products/docker-toolbox)
+This repo uses [`kubernetes-anywhere`](https://github.com/kubernetes/kubernetes-anywhere) to start k8s cluster locally with [Docker Machine](https://www.docker.com/products/docker-toolbox)
 
+The [`Makefile`](./Makefile) contains targets for starting the cluster and helper targets for `kubectl` to apply the K8S manifests and interact with the pods.
 
 ```
-kid up
+make start-kube
 ```
 
-The Canary Dashboard should be accessible at: http://docker.local:31999 or http://localhost:31999 if you are using the Docker for Mac beta.
-
-NOTE: to get your docker machine to resolve to `docker.local` run this: `docker run -d --name avahi-docker --net host --restart always -e AVAHI_HOST=docker danisla/avahi:latest`
+OPTIONAL: to get your docker machine to resolve to `docker.local` run this: `docker run -d --name avahi-docker --net host --restart always -e AVAHI_HOST=docker danisla/avahi:latest`
 
 Start the yarn cluster:
 
 ```
 make
 ```
-
-The [`Makefile`](./Makefile) contains helper targets for `kubectl` to apply the K8S manifests and interact with the pods.
 
 ### Using Weave Scope (Optional)
 
@@ -40,11 +37,16 @@ Weave Scope is now available at: http://localhost:4040
 
 ```
 make clean
-kid down
 ```
 
 Stopping Weave Scope (if started)
 
 ```
 kubectl delete ds weavescope-probe && kubectl delete rc,services weavescope-app
+```
+
+Shutdown the cluster
+
+```
+make stop-kube
 ```

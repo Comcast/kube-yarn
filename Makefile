@@ -1,8 +1,8 @@
 NAMESPACE ?= yarn-cluster
 
 up: init create-svc create-rc
-init: create-namespace create-configmap
-clean: delete-svc delete-rc delete-configmap delete-namespace
+init: create-namespace create-configmap create-service-account
+clean: delete-svc delete-rc delete-configmap delete-service-account delete-namespace
 
 ### Namespace
 create-namespace:
@@ -26,17 +26,26 @@ get-configmap: kubectl
 		$(KUBECTL) get configmap hadoop-config -o=yaml
 
 
+### Service Account
+create-service-account: kubectl
+		$(KUBECTL) create -f manifests/service-account.yaml
+
+delete-service-account: kubectl
+		-$(KUBECTL) delete serviceaccount yarn-cluster
+
 ### Replication Controllers
-create-rc: create-hdfs create-yarn create-zeppelin
-delete-rc: delete-zeppelin delete-yarn delete-hdfs
+create-rc: create-hosts-disco create-hdfs create-yarn create-zeppelin
+delete-rc: delete-zeppelin delete-yarn delete-hdfs delete-hosts-disco
 
-create-hdfs: create-namenode-controller create-datanode-controller
-delete-hdfs: delete-datanode-controller delete-namenode-controller
-create-zeppelin: create-zeppelin-controller
-delete-zeppelin: delete-zeppelin-controller
+create-hosts-disco: create-hosts-disco-service create-hosts-disco-controller
+delete-hosts-disco: delete-hosts-disco-controller delete-hosts-disco-service
+create-hdfs: create-namenode-service create-datanode-service create-namenode-controller create-datanode-controller
+delete-hdfs: delete-datanode-controller delete-namenode-controller delete-datanode-service delete-namenode-service
+create-zeppelin: create-zeppelin-service create-zeppelin-controller
+delete-zeppelin: delete-zeppelin-controller delete-zeppelin-service
 
-create-yarn: create-resource-manager-controller create-node-manager-controller
-delete-yarn: delete-node-manager-controller delete-resource-manager-controller
+create-yarn: create-resource-manager-service create-resource-manager-controller create-node-manager-controller
+delete-yarn: delete-node-manager-controller delete-resource-manager-controller delete-resource-manager-service
 
 create-namenode-controller: kubectl
 		$(KUBECTL) create -f manifests/hdfs-namenode-controller.yaml
@@ -68,10 +77,16 @@ create-zeppelin-controller: kubectl
 delete-zeppelin-controller: kubectl
 		-$(KUBECTL) delete rc zeppelin-controller
 
+create-hosts-disco-controller: kubectl
+		$(KUBECTL) create -f manifests/hosts-disco-controller.yaml
+
+delete-hosts-disco-controller: kubectl
+		-$(KUBECTL) delete rc hosts-disco-controller
+
 
 ### Services
-create-svc: create-datanode-service create-namenode-service create-resource-manager-service
-delete-svc: delete-datanode-service delete-namenode-service delete-resource-manager-service
+create-svc: create-hosts-disco-service create-datanode-service create-namenode-service create-resource-manager-service
+delete-svc: delete-datanode-service delete-namenode-service delete-resource-manager-service delete-hosts-disco-service
 
 create-namenode-service: kubectl
 		$(KUBECTL) create -f manifests/hdfs-namenode-service.yaml
@@ -96,6 +111,12 @@ create-zeppelin-service: kubectl
 
 delete-zeppelin-service: kubectl
 		-$(KUBECTL) delete service zeppelin
+
+create-hosts-disco-service: kubectl
+		$(KUBECTL) create -f manifests/hosts-disco-service.yaml
+
+delete-hosts-disco-service: kubectl
+		-$(KUBECTL) delete service hosts-disco
 
 
 ### Helper tasks
@@ -139,6 +160,9 @@ datanode-shell: kubectl get-datanode-pod
 resource-manager-shell: kubectl get-resource-manager-pod
 		$(KUBECTL) exec -it $(RESOURCE_MANAGER_POD) -- bash
 
+rm-logs: kubectl get-resource-manager-pod
+		$(KUBECTL) exec -it $(RESOURCE_MANAGER_POD) -- bash -c 'tail -f $$HADOOP_PREFIX/logs/*.log'
+
 dfsreport: kubectl get-namenode-pod
 		$(KUBECTL) exec -it $(NAMENODE_POD) -- /usr/local/hadoop/bin/hdfs dfsadmin -report
 
@@ -147,3 +171,34 @@ port-forward-rm: get-resource-manager-pod
 
 port-forward-zeppelin: get-zeppelin-pod
 		$(KUBECTL) port-forward $(ZEPPELIN_POD) 8081:8080
+
+zeppelin-shell: get-zeppelin-pod
+		$(KUBECTL) exec -it $(ZEPPELIN_POD) -- bash
+
+### Local cluster targets
+start-kube:
+		# weave
+		weave launch
+		weave expose -h moby.weave.local
+
+		# Kubernetes Anywhere
+		docker run --rm \
+		  --volume="/:/rootfs" \
+		  --volume="/var/run/weave/weave.sock:/docker.sock" \
+		    weaveworks/kubernetes-anywhere:toolbox-v1.2 \
+		      sh -c 'setup-single-node && compose -p kube up -d'
+
+		# SkyDNS
+		kubectl create -f https://git.io/vrjpn
+
+		# Test it out
+		kubectl cluster-info
+
+stop-kube:
+		-kubectl delete -f https://git.io/vrjpn
+		-docker run --rm \
+		  --volume="/:/rootfs" \
+		  --volume="/var/run/weave/weave.sock:/docker.sock" \
+		    weaveworks/kubernetes-anywhere:toolbox-v1.2 \
+		      sh -c 'setup-single-node && compose -p kube down'
+		-weave stop

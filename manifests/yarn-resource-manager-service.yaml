@@ -13,8 +13,20 @@ spec:
     port: 8088
     protocol: TCP
   - name: yarn1
-    port: 8031
+    port: 8030
     protocol: TCP
   - name: yarn2
+    port: 8031
+    protocol: TCP
+  - name: yarn3
     port: 8032
+    protocol: TCP
+  - name: yarn4
+    port: 8033
+    protocol: TCP
+  - name: yarn5
+    port: 8040
+    protocol: TCP
+  - name: yarn6
+    port: 8042
     protocol: TCP

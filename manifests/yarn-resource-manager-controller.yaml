@@ -9,9 +9,12 @@ spec:
     component: yarn-resource-manager
   template:
     metadata:
+      # annotations:
+      #   pod.beta.kubernetes.io/hostname: yarn-resource-manager
       labels:
         component: yarn-resource-manager
     spec:
+      serviceAccount: yarn-cluster
       containers:
         - name: yarn-resource-manager
           image: sequenceiq/hadoop-docker:2.6.0
@@ -29,6 +32,13 @@ spec:
           volumeMounts:
             - name: hadoop-config
               mountPath: /tmp/hadoop-config
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - "/bin/sh"
+                  - "-c"
+                  - "curl -sf http://hosts-disco/k8s_hosts_disco > /bin/k8s_hosts_disco && chmod +x /bin/k8s_hosts_disco && /bin/k8s_hosts_disco"
       volumes:
         - name: hadoop-config
           configMap:

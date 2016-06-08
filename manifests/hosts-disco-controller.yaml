@@ -1,0 +1,25 @@
+kind: ReplicationController
+apiVersion: v1
+metadata:
+  name: hosts-disco-controller
+  namespace: yarn-cluster
+spec:
+  replicas: 1
+  selector:
+    component: hosts-disco
+  template:
+    metadata:
+      labels:
+        component: hosts-disco
+    spec:
+      serviceAccount: yarn-cluster
+      containers:
+        - name: hosts-disco
+          image: danisla/k8s_hosts_disco:latest
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"

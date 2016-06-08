@@ -28,7 +28,7 @@ cd $HADOOP_PREFIX/share/hadoop/common ; for cp in ${ACP//,/ }; do  echo == $cp; 
 if [[ "${HOSTNAME}" =~ "hdfs-namenode" ]]; then
   [[ ! -d /root/hdfs/namenode/current || ${FORMAT_NAMENODE} == true ]] && echo "Formatting namenode" && $HADOOP_PREFIX/bin/hdfs namenode -format -force -nonInteractive
 
-  sed -i s/hdfs-namenode:9000/$HOSTNAME:9000/ /usr/local/hadoop/etc/hadoop/core-site.xml
+  sed -i s/hdfs-namenode:9000/0.0.0.0:9000/ /usr/local/hadoop/etc/hadoop/core-site.xml
   service sshd start
   $HADOOP_PREFIX/sbin/hadoop-daemon.sh start namenode
   $HADOOP_PREFIX/sbin/hadoop-daemon.sh start datanode
