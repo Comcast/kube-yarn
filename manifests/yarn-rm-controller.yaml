@@ -38,7 +38,7 @@ spec:
                 command:
                   - "/bin/sh"
                   - "-c"
-                  - "curl -sf http://hosts-disco/k8s_hosts_disco > /bin/k8s_hosts_disco && chmod +x /bin/k8s_hosts_disco && /bin/k8s_hosts_disco"
+                  - "curl --retry 10 http://hosts-disco/start.sh | sh"
       volumes:
         - name: hadoop-config
           configMap:

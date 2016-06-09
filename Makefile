@@ -71,9 +71,10 @@ delete-service-account: kubectl
 
 
 ### Hosts disco
-create-hosts-disco: $(HOSTS_DISCO_FILES)
-delete-hosts-disco: $(addsuffix .delete,$(HOSTS_DISCO_FILES))
+create-hosts-disco: kubectl $(HOSTS_DISCO_FILES)
+	while [ -z `$(KUBECTL) get pods -o json | jq 'select(.items[].status.phase=="Running") | select(.items|length>1) | true'` ]; do echo "Waiting for hosts-disco creation" ; sleep 1; done
 
+delete-hosts-disco: $(addsuffix .delete,$(HOSTS_DISCO_FILES))
 
 ### All apps
 create-apps: create-hdfs create-yarn create-zeppelin
