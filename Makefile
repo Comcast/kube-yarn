@@ -20,6 +20,7 @@ ZEPPELIN_FILES=$(addprefix $(MANIFESTS)/,$(ZEPPELIN_FILES_BASE))
 all: init create-apps
 init: create-ns create-configmap create-service-account create-hosts-disco
 clean: delete-apps delete-hosts-disco delete-configmap delete-service-account delete-ns
+	while [[ -n `kubectl get ns -o json | jq 'select(.items[].status.phase=="Terminating") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace termination" ; sleep 5; done
 
 ### Executable dependencies
 KUBECTL_BIN := $(shell command -v kubectl 2> /dev/null)
@@ -72,12 +73,12 @@ delete-service-account: kubectl
 
 ### Hosts disco
 create-hosts-disco: kubectl $(HOSTS_DISCO_FILES)
-	while [ -z `$(KUBECTL) get pods -o json | jq 'select(.items[].status.phase=="Running") | select(.items|length>1) | true'` ]; do echo "Waiting for hosts-disco creation" ; sleep 1; done
+	while [[ -z `$(KUBECTL) get pods -o json | jq 'select(.items[].metadata.labels.component=="hosts-disco" and .items[].status.phase=="Running") | select(.items|length>1) | true'` ]]; do echo "Waiting for hosts-disco creation" ; sleep 2; done
 
 delete-hosts-disco: $(addsuffix .delete,$(HOSTS_DISCO_FILES))
 
 ### All apps
-create-apps: create-hdfs create-yarn create-zeppelin
+create-apps: create-hdfs create-yarn create-zeppelin get-nn-pod get-rm-pod get-zeppelin-pod
 delete-apps: delete-zeppelin delete-yarn delete-hdfs
 
 
@@ -88,12 +89,12 @@ delete-hdfs: $(addsuffix .delete,$(HDFS_FILES))
 
 ### YARN
 create-yarn: $(YARN_FILES)
-delete-yarn: $(addsuffix .delete,$(YARN_FILES))
+delete-yarn: delete-yarn-rm-pf $(addsuffix .delete,$(YARN_FILES))
 
 
 ### Zeppelin
 create-zeppelin: $(ZEPPELIN_FILES)
-delete-zeppelin: $(addsuffix .delete,$(ZEPPELIN_FILES))
+delete-zeppelin: delete-zeppelin-controller-pf $(addsuffix .delete,$(ZEPPELIN_FILES))
 
 
 ### Helper targets
@@ -109,21 +110,28 @@ get-pods: kubectl
 get-svc: kubectl
 	$(KUBECTL) get services
 
-get-nn-pod: kubectl
+wait-for-%-pod: kubectl
+	while [[ -z `$(KUBECTL) get pods -o json | jq 'select(.items[].metadata.labels.component=="'$*'" and .items[].status.phase=="Running") | true'` ]]; do echo "Waiting for $* pod" ; sleep 2; done
+
+get-nn-pod: wait-for-hdfs-nn-pod
 	$(eval NAMENODE_POD := $(shell $(KUBECTL) get pods -l component=hdfs-nn -o jsonpath={.items..metadata.name}))
 	echo $(NAMENODE_POD)
 
-get-dn-pod: kubectl
+get-dn-pod: wait-for-hdfs-dn-pod
 	$(eval DATANODE_POD := $(shell $(KUBECTL) get pods -l component=hdfs-dn -o jsonpath={.items..metadata.name}))
 	echo $(DATANODE_POD)
 
-get-rm-pod: kubectl
+get-rm-pod: wait-for-yarn-rm-pod
 	$(eval RESOURCE_MANAGER_POD := $(shell $(KUBECTL) get pods -l component=yarn-rm -o jsonpath={.items..metadata.name}))
 	echo $(RESOURCE_MANAGER_POD)
 
-get-zeppelin-pod: kubectl
+get-zeppelin-pod: wait-for-zeppelin-pod
 	$(eval ZEPPELIN_POD := $(shell $(KUBECTL) get pods -l component=zeppelin -o jsonpath={.items..metadata.name}))
 	echo $(ZEPPELIN_POD)
+
+get-canary-pod: kubectl
+	$(eval CANARY_POD := $(shell kubectl --namespace kube-system get pod --selector=app=kubernetes-dashboard-canary -o jsonpath={.items..metadata.name}))
+	echo $(CANARY_POD)
 
 nn-logs: kubectl get-nn-pod
 	$(KUBECTL) logs $(NAMENODE_POD)
@@ -144,14 +152,23 @@ rm-logs: kubectl get-rm-pod
 	$(KUBECTL) exec -it $(RESOURCE_MANAGER_POD) -- bash -c 'tail -f $$HADOOP_PREFIX/logs/*.log'
 
 rm-pf: get-rm-pod
-	$(KUBECTL) port-forward $(RESOURCE_MANAGER_POD) 8088:8088
+	$(KUBECTL) port-forward $(RESOURCE_MANAGER_POD) 8088:8088 2>/dev/null &
 
 zeppelin-shell: get-zeppelin-pod
 	$(KUBECTL) exec -it $(ZEPPELIN_POD) -- bash
 
 zeppelin-pf: get-zeppelin-pod
-	$(KUBECTL) port-forward $(ZEPPELIN_POD) 8081:8080
+	$(KUBECTL) port-forward $(ZEPPELIN_POD) 8081:8080 2>/dev/null &
 
+port-forward: rm-pf zeppelin-pf
+
+canary-pf: get-canary-pod
+	kubectl --namespace kube-system port-forward $(CANARY_POD) 31999:9090 2>/dev/null &
+
+delete-%-pf: kubectl
+	-pkill -f "kubectl.*port-forward.*$*.*"
+
+delete-pf: kubectl delete-dashboard-canary-pf delete-zeppelin-controller-pf delete-yarn-rm-pf
 
 ### Local cluster targets
 start-k8s: weave kubectl
@@ -169,11 +186,17 @@ start-k8s: weave kubectl
 	# SkyDNS
 	kubectl create -f https://git.io/vrjpn
 
+	# Canary Dashboard
+	kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard-canary.yaml
+
 	# Test it out
 	kubectl cluster-info
 
-stop-k8s: weave kubectl
+stop-k8s: weave kubectl clean delete-pf
+	# Delete SkyDNS
 	-kubectl delete -f https://git.io/vrjpn
+	# Delete Canary Dashboard
+	-kubectl delete -f kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard-canary.yaml
 	-docker run --rm \
 	  --volume="/:/rootfs" \
 	  --volume="/var/run/weave/weave.sock:/docker.sock" \

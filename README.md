@@ -22,6 +22,20 @@ Start the yarn cluster:
 make
 ```
 
+This will create all of the components for the cluster.
+
+Run this to create port forwards to `localhost`:
+
+```
+make port-forward
+```
+
+You should now be able to access the following:
+
+- YARN WebUI: `http://localhost:8088`
+- Zeppelin: `http://localhost:8081`
+- k8S Canary Dashboard: `http://localhost:31999`
+
 ### Using Weave Scope (Optional)
 
 Run [Weave Scope](https://www.weave.works/docs/scope/0.15.0/installing/#k8s) to visualize and access pods in the cluster:
