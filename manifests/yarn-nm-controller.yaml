@@ -1,20 +1,20 @@
 kind: ReplicationController
 apiVersion: v1
 metadata:
-  name: hdfs-namenode-controller
+  name: yarn-nm-controller
   namespace: yarn-cluster
 spec:
-  replicas: 1
+  replicas: 2
   selector:
-    component: hdfs-namenode
+    component: yarn-nm
   template:
     metadata:
       labels:
-        component: hdfs-namenode
+        component: yarn-nm
     spec:
       serviceAccount: yarn-cluster
       containers:
-        - name: hdfs-namenode
+        - name: yarn-nm
           image: sequenceiq/hadoop-docker:2.6.0
           command:
              - "/bin/bash"
@@ -25,8 +25,8 @@ spec:
               memory: "1024Mi"
               cpu: "100m"
             limits:
-              memory: "2048Mi"
-              cpu: "1000m"
+              memory: "3128Mi"
+              cpu: "4000m"
           volumeMounts:
             - name: hadoop-config
               mountPath: /tmp/hadoop-config

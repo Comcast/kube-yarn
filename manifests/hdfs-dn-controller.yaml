@@ -1,22 +1,20 @@
 kind: ReplicationController
 apiVersion: v1
 metadata:
-  name: yarn-resource-manager-controller
+  name: hdfs-dn-controller
   namespace: yarn-cluster
 spec:
   replicas: 1
   selector:
-    component: yarn-resource-manager
+    component: hdfs-dn
   template:
     metadata:
-      # annotations:
-      #   pod.beta.kubernetes.io/hostname: yarn-resource-manager
       labels:
-        component: yarn-resource-manager
+        component: hdfs-dn
     spec:
       serviceAccount: yarn-cluster
       containers:
-        - name: yarn-resource-manager
+        - name: hdfs-dn
           image: sequenceiq/hadoop-docker:2.6.0
           command:
              - "/bin/bash"
@@ -28,7 +26,7 @@ spec:
               cpu: "100m"
             limits:
               memory: "2048Mi"
-              cpu: "2000m"
+              cpu: "1000m"
           volumeMounts:
             - name: hadoop-config
               mountPath: /tmp/hadoop-config

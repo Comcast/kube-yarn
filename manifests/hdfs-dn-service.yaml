@@ -1,13 +1,13 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: hdfs-datanode
+  name: hdfs-dn
   namespace: yarn-cluster
 spec:
   type: ClusterIP
   sessionAffinity: ClientIP
   selector:
-    component: hdfs-datanode
+    component: hdfs-dn
   ports:
   - name: dfs
     port: 9000

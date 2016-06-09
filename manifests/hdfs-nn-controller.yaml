@@ -1,20 +1,20 @@
 kind: ReplicationController
 apiVersion: v1
 metadata:
-  name: hdfs-datanode-controller
+  name: hdfs-nn-controller
   namespace: yarn-cluster
 spec:
   replicas: 1
   selector:
-    component: hdfs-datanode
+    component: hdfs-nn
   template:
     metadata:
       labels:
-        component: hdfs-datanode
+        component: hdfs-nn
     spec:
       serviceAccount: yarn-cluster
       containers:
-        - name: hdfs-datanode
+        - name: hdfs-nn
           image: sequenceiq/hadoop-docker:2.6.0
           command:
              - "/bin/bash"

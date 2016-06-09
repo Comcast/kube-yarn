@@ -11,7 +11,7 @@ This repo uses [`kubernetes-anywhere`](https://github.com/kubernetes/kubernetes-
 The [`Makefile`](./Makefile) contains targets for starting the cluster and helper targets for `kubectl` to apply the K8S manifests and interact with the pods.
 
 ```
-make start-kube
+make start-k8s
 ```
 
 OPTIONAL: to get your docker machine to resolve to `docker.local` run this: `docker run -d --name avahi-docker --net host --restart always -e AVAHI_HOST=docker danisla/avahi:latest`
@@ -48,5 +48,5 @@ kubectl delete ds weavescope-probe && kubectl delete rc,services weavescope-app
 Shutdown the cluster
 
 ```
-make stop-kube
+make stop-k8s
 ```

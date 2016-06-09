@@ -25,28 +25,28 @@ mkdir -p /root/hdfs/datanode
 # installing libraries if any - (resource urls added comma separated to the ACP system variable)
 cd $HADOOP_PREFIX/share/hadoop/common ; for cp in ${ACP//,/ }; do  echo == $cp; curl -LO $cp ; done; cd -
 
-if [[ "${HOSTNAME}" =~ "hdfs-namenode" ]]; then
+if [[ "${HOSTNAME}" =~ "hdfs-nn" ]]; then
   [[ ! -d /root/hdfs/namenode/current || ${FORMAT_NAMENODE} == true ]] && echo "Formatting namenode" && $HADOOP_PREFIX/bin/hdfs namenode -format -force -nonInteractive
 
-  sed -i s/hdfs-namenode:9000/0.0.0.0:9000/ /usr/local/hadoop/etc/hadoop/core-site.xml
+  sed -i s/hdfs-nn:9000/0.0.0.0:9000/ /usr/local/hadoop/etc/hadoop/core-site.xml
   service sshd start
   $HADOOP_PREFIX/sbin/hadoop-daemon.sh start namenode
   $HADOOP_PREFIX/sbin/hadoop-daemon.sh start datanode
 fi
 
-if [[ "${HOSTNAME}" =~ "hdfs-datanode" ]]; then
+if [[ "${HOSTNAME}" =~ "hdfs-dn" ]]; then
   $HADOOP_PREFIX/sbin/hadoop-daemon.sh start datanode
 fi
 
-if [[ "${HOSTNAME}" =~ "yarn-resource-manager" ]]; then
-  sed -i s/yarn-resource-manager/0.0.0.0/ $HADOOP_PREFIX/etc/hadoop/yarn-site.xml
+if [[ "${HOSTNAME}" =~ "yarn-rm" ]]; then
+  sed -i s/yarn-rm/0.0.0.0/ $HADOOP_PREFIX/etc/hadoop/yarn-site.xml
   cp ${CONFIG_DIR}/start-yarn-rm.sh $HADOOP_PREFIX/sbin/
   cd $HADOOP_PREFIX/sbin
   chmod +x start-yarn-rm.sh
   ./start-yarn-rm.sh
 fi
 
-if [[ "${HOSTNAME}" =~ "yarn-node-manager" ]]; then
+if [[ "${HOSTNAME}" =~ "yarn-nm" ]]; then
   cp ${CONFIG_DIR}/start-yarn-nm.sh $HADOOP_PREFIX/sbin/
   cd $HADOOP_PREFIX/sbin
   chmod +x start-yarn-nm.sh
