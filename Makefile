@@ -171,6 +171,26 @@ delete-%-pf: kubectl
 delete-pf: kubectl delete-dashboard-canary-pf delete-zeppelin-controller-pf delete-yarn-rm-pf
 
 ### Local cluster targets
+KID := $(shell command -v kid 2> /dev/null)
+kid:
+ifndef KID
+	$(warning Installing Kubernetes In Docker (kid))
+	curl -sfL https://raw.githubusercontent.com/danisla/kid/docker-mac/kid > /usr/local/bin/kid
+	chmod +x /usr/local/bin/kid
+endif
+
+# Discovery via docker.local address
+avahi:
+	docker run -d --name avahi-docker --net host --restart always -e AVAHI_HOST=docker danisla/avahi:latest
+stop-avahi:
+	docker kill avahi-docker && docker rm avahi-docker
+
+kid-up: kid avahi
+	kid up
+
+kid-down: clean delete-pf
+	kid down
+
 start-k8s: weave kubectl
 	# weave
 	weave launch

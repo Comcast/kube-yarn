@@ -10,8 +10,16 @@ This repo uses [`kubernetes-anywhere`](https://github.com/kubernetes/kubernetes-
 
 The [`Makefile`](./Makefile) contains targets for starting the cluster and helper targets for `kubectl` to apply the K8S manifests and interact with the pods.
 
+If using Docker for Mac (beta)
+
 ```
 make start-k8s
+```
+
+If using Docker Machine
+
+```
+make kid-up
 ```
 
 OPTIONAL: to get your docker machine to resolve to `docker.local` run this: `docker run -d --name avahi-docker --net host --restart always -e AVAHI_HOST=docker danisla/avahi:latest`
@@ -47,7 +55,37 @@ kubectl port-forward $(kubectl get pod --selector=weavescope-component=weavescop
 
 Weave Scope is now available at: http://localhost:4040
 
-### Shutting down
+## Make targets:
+
+### `init`
+
+Create the namespace, configmaps service account and hosts-disco service.
+
+### `create-apps`
+
+Creates hdfs, yarn and zeppelin apps.
+
+### `port-forward`
+
+Creates local port forwards for yarn and zeppelin.
+
+### `dfsreport`
+
+Gets the state of HDFS.
+
+### `nn-shell`
+
+Drops into a shell on the namenode
+
+### `rm-shell`
+
+Drops into a shell on the resource manager.
+
+### `zeppelin-shell`
+
+Drops into a shell on the zeppelin container.
+
+## Shutting down
 
 ```
 make clean
@@ -61,6 +99,14 @@ kubectl delete ds weavescope-probe && kubectl delete rc,services weavescope-app
 
 Shutdown the cluster
 
+Docker for Mac:
+
 ```
 make stop-k8s
+```
+
+Docker Machine:
+
+```
+make kid-down
 ```
