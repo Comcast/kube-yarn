@@ -18,7 +18,7 @@ ZEPPELIN_FILES_BASE=zeppelin-service.yaml zeppelin-controller.yaml
 ZEPPELIN_FILES=$(addprefix $(MANIFESTS)/,$(ZEPPELIN_FILES_BASE))
 
 all: init create-apps
-init: create-ns create-configmap create-service-account create-hosts-disco
+init: create-ns create-configmap create-service-account check-hosts-disco
 clean: delete-apps delete-hosts-disco delete-configmap delete-service-account delete-ns
 	while [[ -n `kubectl get ns -o json | jq 'select(.items[].status.phase=="Terminating") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace termination" ; sleep 5; done
 
@@ -74,7 +74,10 @@ delete-service-account: kubectl
 
 ### Hosts disco
 create-hosts-disco: kubectl $(HOSTS_DISCO_FILES)
+
+check-hosts-disco: create-hosts-disco
 	while [[ -z `$(KUBECTL) get pods -o json | jq 'select(.items[].metadata.labels.component=="hosts-disco" and .items[].status.phase=="Running") | select(.items|length>1) | true'` ]]; do echo "Waiting for hosts-disco creation" ; sleep 2; done
+	while true; do make hosts-disco-pf ; sleep 5 ; curl -sfq http://localhost:8002 >/dev/null && break ; make delete-hosts-disco-pf ; echo "Waiting for hosts-disco to initialize" ; done
 
 delete-hosts-disco: $(addsuffix .delete,$(HOSTS_DISCO_FILES))
 
@@ -161,6 +164,13 @@ zeppelin-shell: get-zeppelin-pod
 zeppelin-pf: get-zeppelin-pod
 	$(KUBECTL) port-forward $(ZEPPELIN_POD) 8081:8080 2>/dev/null &
 
+get-hosts-disco-pod: kubectl
+	$(eval HOSTS_DISCO_POD := $(shell $(KUBECTL) get pods -l component=hosts-disco -o jsonpath={.items[0]..metadata.name}))
+	echo $(HOSTS_DISCO_POD)
+
+hosts-disco-pf: get-hosts-disco-pod
+	$(KUBECTL) port-forward $(HOSTS_DISCO_POD) 8002:80 2>/dev/null &
+
 port-forward: rm-pf zeppelin-pf
 
 canary-pf: get-canary-pod
@@ -169,7 +179,7 @@ canary-pf: get-canary-pod
 delete-%-pf: kubectl
 	-pkill -f "kubectl.*port-forward.*$*.*"
 
-delete-pf: kubectl delete-dashboard-canary-pf delete-zeppelin-controller-pf delete-yarn-rm-pf
+delete-pf: kubectl delete-dashboard-canary-pf delete-zeppelin-controller-pf delete-yarn-rm-pf delete-hosts-disco-pf
 
 ### Local cluster targets
 KID := $(shell command -v kid 2> /dev/null)
@@ -184,13 +194,19 @@ endif
 avahi:
 	docker run -d --name avahi-docker --net host --restart always -e AVAHI_HOST=docker danisla/avahi:latest
 stop-avahi:
-	docker kill avahi-docker && docker rm avahi-docker
+	-docker kill avahi-docker && docker rm avahi-docker
 
-kid-up: kid avahi
+kid-up: kid
 	kid up
+	# Test it out
+	kubectl cluster-info
 
 kid-down: clean delete-pf stop-avahi
 	kid down
+
+kube-clean:
+	-docker-machine ssh default "mount |grep -i kube | awk '{print $$3}'|xargs sudo umount >/dev/null 2>&1"
+	docker-machine ssh default -t "sudo rm -Rf /var/lib/kubelet"
 
 start-k8s: weave kubectl
 	# weave
