@@ -27,7 +27,8 @@ KUBECTL_BIN := $(shell command -v kubectl 2> /dev/null)
 kubectl:
 ifndef KUBECTL_BIN
 	$(warning installing kubectl)
-	curl -sf https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/darwin/amd64/kubectl > /usr/local/bin
+	curl -sf https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/darwin/amd64/kubectl > /usr/local/bin/kubectl
+	chmod +x /usr/local/bin/kubectl
 endif
 	$(eval KUBECTL := kubectl --namespace $(NAMESPACE))
 
@@ -188,7 +189,7 @@ stop-avahi:
 kid-up: kid avahi
 	kid up
 
-kid-down: clean delete-pf
+kid-down: clean delete-pf stop-avahi
 	kid down
 
 start-k8s: weave kubectl
