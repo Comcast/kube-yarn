@@ -19,6 +19,8 @@ spec:
           env:
           - name: ZEPPELIN_PORT
             value: "8080"
+          - name: MASTER
+            value: "yarn-client"
           resources:
             requests:
               memory: "2048Mi"
@@ -29,11 +31,7 @@ spec:
           volumeMounts:
             - name: hadoop-config
               mountPath: /usr/hadoop-2.6.3/etc/hadoop
-        - name: hosts-disco
-          image: danisla/k8s_hosts_disco:latest
-          env:
-          - name: HOSTS_DISCO_CONTAINER
-            value: "zeppelin"
+
       volumes:
         - name: hadoop-config
           configMap:

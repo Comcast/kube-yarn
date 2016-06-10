@@ -44,6 +44,20 @@ You should now be able to access the following:
 - Zeppelin: `http://localhost:8081`
 - k8S Canary Dashboard: `http://localhost:31999`
 
+### Spark on YARN in Zeppelin
+
+In your browser, go to Zeppelin at: http://localhost:8081
+
+Create a new note and run this in a paragraph:
+
+```
+sc.parallelize(1 to 1000).count
+```
+
+Press `shift-enter` to execute the paragraph
+
+The first command executed creates the spark job on yarn and will take a few seconds, then you should get the result `1000` when complete.
+
 ### Using Weave Scope (Optional)
 
 Run [Weave Scope](https://www.weave.works/docs/scope/0.15.0/installing/#k8s) to visualize and access pods in the cluster:
