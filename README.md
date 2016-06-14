@@ -24,7 +24,7 @@ make kid-up
 
 OPTIONAL: to get your docker machine to resolve to `docker.local` run this: `docker run -d --name avahi-docker --net host --restart always -e AVAHI_HOST=docker danisla/avahi:latest`
 
-Start the yarn cluster:
+## Start the YARN cluster:
 
 ```
 make
