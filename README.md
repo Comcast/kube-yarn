@@ -10,6 +10,8 @@ This repo uses [`kubernetes-anywhere`](https://github.com/kubernetes/kubernetes-
 
 The [`Makefile`](./Makefile) contains targets for starting the cluster and helper targets for `kubectl` to apply the K8S manifests and interact with the pods.
 
+When running locally with Docker, make sure your Docker for Mac or Docker Machine have enough resources allocated to them, you should set this to at least 8GB of memory and 8 CPUs if possible. If not set, the pods won't have enough resources to fully start and will be stuck in the `Pending` creation phase.
+
 If using Docker for Mac (beta)
 
 ```
@@ -63,11 +65,12 @@ The first command executed creates the spark job on yarn and will take a few sec
 Run [Weave Scope](https://www.weave.works/docs/scope/0.15.0/installing/#k8s) to visualize and access pods in the cluster:
 
 ```
-kubectl create -f 'https://scope.weave.works/launch/k8s/weavescope.yaml' --validate=false
-kubectl port-forward $(kubectl get pod --selector=weavescope-component=weavescope-app -o jsonpath={.items..metadata.name}) 4040
+make create-weavescope
 ```
 
 Weave Scope is now available at: http://localhost:4040
+
+NOTE: it may take a few seconds for weavescope to discover all of the nodes and pods.
 
 ## Make targets:
 

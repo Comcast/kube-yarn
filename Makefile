@@ -1,3 +1,4 @@
+KUBE_SERVER="http://localhost:8080"
 NAMESPACE=yarn-cluster
 ENTITIES=namespace
 MANIFESTS=./manifests
@@ -20,7 +21,7 @@ ZEPPELIN_FILES=$(addprefix $(MANIFESTS)/,$(ZEPPELIN_FILES_BASE))
 all: init create-apps
 init: create-ns create-configmap create-service-account check-hosts-disco
 clean: delete-apps delete-hosts-disco delete-configmap delete-service-account delete-ns
-	while [[ -n `kubectl get ns -o json | jq 'select(.items[].status.phase=="Terminating") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace termination" ; sleep 5; done
+	while [[ -n `kubectl -s $(KUBE_SERVER) get ns -o json | jq 'select(.items[].status.phase=="Terminating") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace termination" ; sleep 5; done
 
 ### Executable dependencies
 KUBECTL_BIN := $(shell command -v kubectl 2> /dev/null)
@@ -30,7 +31,7 @@ ifndef KUBECTL_BIN
 	curl -sf https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/darwin/amd64/kubectl > /usr/local/bin/kubectl
 	chmod +x /usr/local/bin/kubectl
 endif
-	$(eval KUBECTL := kubectl --namespace $(NAMESPACE))
+	$(eval KUBECTL := kubectl -s $(KUBE_SERVER) --namespace $(NAMESPACE))
 
 WEAVE := $(shell command -v weave 2> /dev/null)
 weave:
@@ -101,6 +102,15 @@ create-zeppelin: $(ZEPPELIN_FILES)
 delete-zeppelin: delete-zeppelin-controller-pf $(addsuffix .delete,$(ZEPPELIN_FILES))
 
 
+### Weave Scope
+create-weavescope: kubectl
+	kubectl -s $(KUBE_SERVER) create -f 'https://scope.weave.works/launch/k8s/weavescope.yaml' --validate=false
+	while [[ -z `kubectl -s $(KUBE_SERVER) get pod --selector=weavescope-component=weavescope-app -o json | jq 'select(.items[].status.phase=="Running") | true'` ]]; do echo "Waiting for weavescope pod" ; sleep 2; done
+	make weavescope-pf
+
+delete-weavescope: delete-weavescope-pf
+	-kubectl -s $(KUBE_SERVER) delete -f 'https://scope.weave.works/launch/k8s/weavescope.yaml'
+
 ### Helper targets
 get-ns: kubectl
 	$(KUBECTL) get ns
@@ -134,8 +144,12 @@ get-zeppelin-pod: wait-for-zeppelin-pod
 	echo $(ZEPPELIN_POD)
 
 get-canary-pod: kubectl
-	$(eval CANARY_POD := $(shell kubectl --namespace kube-system get pod --selector=app=kubernetes-dashboard-canary -o jsonpath={.items..metadata.name}))
+	$(eval CANARY_POD := $(shell kubectl -s $(KUBE_SERVER) --namespace kube-system get pod --selector=app=kubernetes-dashboard-canary -o jsonpath={.items..metadata.name}))
 	echo $(CANARY_POD)
+
+get-weavescope-pod: kubectl
+	$(eval WEAVESCOPE_POD := $(shell kubectl -s $(KUBE_SERVER) --namespace default get pod --selector=weavescope-component=weavescope-app -o jsonpath={.items..metadata.name}))
+	echo $(WEAVESCOPE_POD)
 
 nn-logs: kubectl get-nn-pod
 	$(KUBECTL) logs $(NAMENODE_POD)
@@ -174,7 +188,10 @@ hosts-disco-pf: get-hosts-disco-pod
 port-forward: rm-pf zeppelin-pf
 
 canary-pf: get-canary-pod
-	kubectl --namespace kube-system port-forward $(CANARY_POD) 31999:9090 2>/dev/null &
+	kubectl -s $(KUBE_SERVER) --namespace kube-system port-forward $(CANARY_POD) 31999:9090 2>/dev/null &
+
+weavescope-pf: get-weavescope-pod
+	kubectl -s $(KUBE_SERVER) --namespace default port-forward $(WEAVESCOPE_POD) 4040 2>/dev/null &
 
 delete-%-pf: kubectl
 	-pkill -f "kubectl.*port-forward.*$*.*"
@@ -201,7 +218,7 @@ kid-up: kid
 	# Test it out
 	kubectl cluster-info
 
-kid-down: clean delete-pf stop-avahi
+kid-down: clean delete-pf stop-avahi delete-weavescope
 	kid down
 
 kube-clean:
@@ -229,7 +246,7 @@ start-k8s: weave kubectl
 	# Test it out
 	kubectl cluster-info
 
-stop-k8s: weave kubectl clean delete-pf
+stop-k8s: weave kubectl clean delete-pf delete-weavescope
 	# Delete SkyDNS
 	-kubectl delete -f https://git.io/vrjpn
 	# Delete Canary Dashboard
@@ -240,3 +257,6 @@ stop-k8s: weave kubectl clean delete-pf
 	    weaveworks/kubernetes-anywhere:toolbox-v1.2 \
 	      sh -c 'setup-single-node && compose -p kube down'
 	-weave stop
+	-docker rm -v kubelet-volumes
+	-docker rm -v weavevolumes-1.5.2
+	-docker rm -v weavedb
