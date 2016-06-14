@@ -36,7 +36,7 @@ spec:
                 command:
                   - "/bin/sh"
                   - "-c"
-                  - "curl --retry 10 http://hosts-disco.yarn-cluster.svc.cluster.local/start.sh | sh"
+                  - "curl --retry 10 http://${HOSTS_DISCO_SERVICE_HOST}:${HOSTS_DISCO_SERVICE_PORT}/start.sh | sh"
       volumes:
         - name: hadoop-config
           configMap:
