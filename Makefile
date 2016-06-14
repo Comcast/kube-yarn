@@ -51,12 +51,22 @@ $(MANIFESTS)/%.yaml.delete: kubectl
 
 ### Namespace
 create-ns: $(NAMESPACE_FILES)
+	while [[ -z `kubectl -s $(KUBE_SERVER) get ns --selector=name=$(NAMESPACE) -o json | jq 'select(.items[].status.phase=="Active") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace creation" ; sleep 5; done
+
 delete-ns: $(addsuffix .delete,$(NAMESPACE_FILES))
 
 
 ### Config Map
 create-configmap: kubectl
-	./manifests/make_hadoop_configmap.sh
+	$(KUBECTL) create configmap hadoop-config \
+	  --from-file=artifacts/bootstrap.sh \
+	  --from-file=artifacts/start-yarn-rm.sh \
+	  --from-file=artifacts/start-yarn-nm.sh \
+	  --from-file=artifacts/slaves \
+	  --from-file=artifacts/core-site.xml \
+	  --from-file=artifacts/hdfs-site.xml \
+	  --from-file=artifacts/mapred-site.xml \
+	  --from-file=artifacts/yarn-site.xml
 
 delete-configmap: kubectl
 	-$(KUBECTL) delete configmap hadoop-config
