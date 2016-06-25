@@ -260,7 +260,7 @@ stop-k8s: weave kubectl clean delete-pf delete-weavescope
 	# Delete SkyDNS
 	-kubectl delete -f https://git.io/vrjpn
 	# Delete Canary Dashboard
-	-kubectl delete -f kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard-canary.yaml
+	-kubectl delete -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard-canary.yaml
 	-docker run --rm \
 	  --volume="/:/rootfs" \
 	  --volume="/var/run/weave/weave.sock:/docker.sock" \
