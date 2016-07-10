@@ -1,4 +1,4 @@
-KUBE_SERVER="http://localhost:8080"
+
 NAMESPACE=yarn-cluster
 ENTITIES=namespace
 MANIFESTS=./manifests
@@ -21,7 +21,7 @@ ZEPPELIN_FILES=$(addprefix $(MANIFESTS)/,$(ZEPPELIN_FILES_BASE))
 all: init create-apps
 init: create-ns create-configmap create-service-account check-hosts-disco
 clean: delete-apps delete-hosts-disco delete-configmap delete-service-account delete-ns
-	while [[ -n `kubectl -s $(KUBE_SERVER) get ns -o json | jq 'select(.items[].status.phase=="Terminating") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace termination" ; sleep 5; done
+	while [[ -n `kubectl get ns -o json | jq 'select(.items[].status.phase=="Terminating") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace termination" ; sleep 5; done
 
 ### Executable dependencies
 KUBECTL_BIN := $(shell command -v kubectl 2> /dev/null)
@@ -31,7 +31,7 @@ ifndef KUBECTL_BIN
 	curl -sf https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/darwin/amd64/kubectl > /usr/local/bin/kubectl
 	chmod +x /usr/local/bin/kubectl
 endif
-	$(eval KUBECTL := kubectl -s $(KUBE_SERVER) --namespace $(NAMESPACE))
+	$(eval KUBECTL := kubectl --namespace $(NAMESPACE))
 
 WEAVE := $(shell command -v weave 2> /dev/null)
 weave:
@@ -51,7 +51,7 @@ $(MANIFESTS)/%.yaml.delete: kubectl
 
 ### Namespace
 create-ns: $(NAMESPACE_FILES)
-	while [[ -z `kubectl -s $(KUBE_SERVER) get ns --selector=name=$(NAMESPACE) -o json | jq 'select(.items[].status.phase=="Active") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace creation" ; sleep 5; done
+	while [[ -z `kubectl get ns --selector=name=$(NAMESPACE) -o json | jq 'select(.items[].status.phase=="Active") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace creation" ; sleep 5; done
 
 delete-ns: $(addsuffix .delete,$(NAMESPACE_FILES))
 
@@ -114,12 +114,12 @@ delete-zeppelin: delete-zeppelin-controller-pf $(addsuffix .delete,$(ZEPPELIN_FI
 
 ### Weave Scope
 create-weavescope: kubectl
-	kubectl -s $(KUBE_SERVER) create -f 'https://scope.weave.works/launch/k8s/weavescope.yaml' --validate=false
-	while [[ -z `kubectl -s $(KUBE_SERVER) get pod --selector=weavescope-component=weavescope-app -o json | jq 'select(.items[].status.phase=="Running") | true'` ]]; do echo "Waiting for weavescope pod" ; sleep 2; done
+	kubectl create -f 'https://scope.weave.works/launch/k8s/weavescope.yaml' --validate=false
+	while [[ -z `kubectl get pod --selector=weavescope-component=weavescope-app -o json | jq 'select(.items[].status.phase=="Running") | true'` ]]; do echo "Waiting for weavescope pod" ; sleep 2; done
 	make weavescope-pf
 
 delete-weavescope: delete-weavescope-pf
-	-kubectl -s $(KUBE_SERVER) delete -f 'https://scope.weave.works/launch/k8s/weavescope.yaml'
+	-kubectl delete -f 'https://scope.weave.works/launch/k8s/weavescope.yaml'
 
 ### Helper targets
 get-ns: kubectl
@@ -154,11 +154,11 @@ get-zeppelin-pod: wait-for-zeppelin-pod
 	echo $(ZEPPELIN_POD)
 
 get-canary-pod: kubectl
-	$(eval CANARY_POD := $(shell kubectl -s $(KUBE_SERVER) --namespace kube-system get pod --selector=app=kubernetes-dashboard-canary -o jsonpath={.items..metadata.name}))
+	$(eval CANARY_POD := $(shell kubectl --namespace kube-system get pod --selector=app=kubernetes-dashboard-canary -o jsonpath={.items..metadata.name}))
 	echo $(CANARY_POD)
 
 get-weavescope-pod: kubectl
-	$(eval WEAVESCOPE_POD := $(shell kubectl -s $(KUBE_SERVER) --namespace default get pod --selector=weavescope-component=weavescope-app -o jsonpath={.items..metadata.name}))
+	$(eval WEAVESCOPE_POD := $(shell kubectl --namespace default get pod --selector=weavescope-component=weavescope-app -o jsonpath={.items..metadata.name}))
 	echo $(WEAVESCOPE_POD)
 
 nn-logs: kubectl get-nn-pod
@@ -198,10 +198,10 @@ hosts-disco-pf: get-hosts-disco-pod
 port-forward: rm-pf zeppelin-pf
 
 canary-pf: get-canary-pod
-	kubectl -s $(KUBE_SERVER) --namespace kube-system port-forward $(CANARY_POD) 31999:9090 2>/dev/null &
+	kubectl --namespace kube-system port-forward $(CANARY_POD) 31999:9090 2>/dev/null &
 
 weavescope-pf: get-weavescope-pod
-	kubectl -s $(KUBE_SERVER) --namespace default port-forward $(WEAVESCOPE_POD) 4040 2>/dev/null &
+	kubectl --namespace default port-forward $(WEAVESCOPE_POD) 4040 2>/dev/null &
 
 delete-%-pf: kubectl
 	-pkill -f "kubectl.*port-forward.*$*.*"
@@ -268,5 +268,5 @@ stop-k8s: weave kubectl clean delete-pf delete-weavescope
 	      sh -c 'setup-single-node && compose -p kube down'
 	-weave stop
 	-docker rm -v kubelet-volumes
-	-docker rm -v weavevolumes-1.5.2
+	-docker rm -v weavevolumes-1.6.0
 	-docker rm -v weavedb
