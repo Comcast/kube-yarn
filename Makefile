@@ -21,7 +21,7 @@ ZEPPELIN_FILES=$(addprefix $(MANIFESTS)/,$(ZEPPELIN_FILES_BASE))
 all: init create-apps
 init: create-ns create-configmap create-service-account check-hosts-disco
 clean: delete-apps delete-hosts-disco delete-configmap delete-service-account delete-ns
-	while [[ -n `kubectl get ns -o json | jq 'select(.items[].status.phase=="Terminating") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace termination" ; sleep 5; done
+	@while [[ -n `kubectl get ns -o json | jq 'select(.items[].status.phase=="Terminating") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace termination" ; sleep 5; done
 
 ### Executable dependencies
 KUBECTL_BIN := $(shell command -v kubectl 2> /dev/null)
@@ -51,7 +51,7 @@ $(MANIFESTS)/%.yaml.delete: kubectl
 
 ### Namespace
 create-ns: $(NAMESPACE_FILES)
-	while [[ -z `kubectl get ns --selector=name=$(NAMESPACE) -o json | jq 'select(.items[].status.phase=="Active") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace creation" ; sleep 5; done
+	@while [[ -z `kubectl get ns --selector=name=$(NAMESPACE) -o json | jq 'select(.items[].status.phase=="Active") | true'` ]]; do echo "Waiting for $(NAMESPACE) namespace creation" ; sleep 5; done
 
 delete-ns: $(addsuffix .delete,$(NAMESPACE_FILES))
 
@@ -87,7 +87,7 @@ delete-service-account: kubectl
 create-hosts-disco: kubectl $(HOSTS_DISCO_FILES)
 
 check-hosts-disco: create-hosts-disco
-	while [[ -z `$(KUBECTL) get pods -o json | jq 'select(.items[].metadata.labels.component=="hosts-disco" and .items[].status.phase=="Running") | select(.items|length>1) | true'` ]]; do echo "Waiting for hosts-disco creation" ; sleep 2; done
+	@while [[ -z `$(KUBECTL) get pods -o json | jq 'select(.items[].metadata.labels.component=="hosts-disco" and .items[].status.phase=="Running") | select(.items|length>1) | true'` ]]; do echo "Waiting for hosts-disco creation" ; sleep 2; done
 	while true; do make hosts-disco-pf ; sleep 5 ; curl -sfq http://localhost:8002 >/dev/null && break ; make delete-hosts-disco-pf ; echo "Waiting for hosts-disco to initialize" ; done
 
 delete-hosts-disco: $(addsuffix .delete,$(HOSTS_DISCO_FILES))
@@ -105,7 +105,9 @@ delete-hdfs: $(addsuffix .delete,$(HDFS_FILES))
 ### YARN
 create-yarn: $(YARN_FILES)
 delete-yarn: delete-yarn-rm-pf $(addsuffix .delete,$(YARN_FILES))
-
+scale-nm: kubectl
+	@IN="" && until [ -n "$$IN" ]; do read -p "Number of Node Manager replicas: " IN; done ; \
+	$(KUBECTL) scale rc yarn-nm-controller --replicas $${IN}
 
 ### Zeppelin
 create-zeppelin: $(ZEPPELIN_FILES)
@@ -115,7 +117,7 @@ delete-zeppelin: delete-zeppelin-controller-pf $(addsuffix .delete,$(ZEPPELIN_FI
 ### Weave Scope
 create-weavescope: kubectl
 	kubectl create -f 'https://scope.weave.works/launch/k8s/weavescope.yaml' --validate=false
-	while [[ -z `kubectl get pod --selector=weavescope-component=weavescope-app -o json | jq 'select(.items[].status.phase=="Running") | true'` ]]; do echo "Waiting for weavescope pod" ; sleep 2; done
+	@while [[ -z `kubectl get pod --selector=weavescope-component=weavescope-app -o json | jq 'select(.items[].status.phase=="Running") | true'` ]]; do echo "Waiting for weavescope pod" ; sleep 2; done
 	make weavescope-pf
 
 delete-weavescope: delete-weavescope-pf
@@ -135,7 +137,7 @@ get-svc: kubectl
 	$(KUBECTL) get services
 
 wait-for-%-pod: kubectl
-	while [[ -z `$(KUBECTL) get pods -o json | jq 'select(.items[].metadata.labels.component=="'$*'" and .items[].status.phase=="Running") | true'` ]]; do echo "Waiting for $* pod" ; sleep 2; done
+	@while [[ -z `$(KUBECTL) get pods -o json | jq 'select(.items[].metadata.labels.component=="'$*'" and .items[].status.phase=="Running") | true'` ]]; do echo "Waiting for $* pod" ; sleep 2; done
 
 get-nn-pod: wait-for-hdfs-nn-pod
 	$(eval NAMENODE_POD := $(shell $(KUBECTL) get pods -l component=hdfs-nn -o jsonpath={.items..metadata.name}))
