@@ -30,3 +30,9 @@ spec:
   - name: yarn6
     port: 8042
     protocol: TCP
+  - name: mapred1
+    port: 10020
+    protocol: TCP
+  - name: mapred2
+    port: 19888
+    protocol: TCP
