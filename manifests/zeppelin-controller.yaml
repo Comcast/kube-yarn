@@ -31,6 +31,13 @@ spec:
           volumeMounts:
             - name: hadoop-config
               mountPath: /usr/hadoop-2.6.3/etc/hadoop
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - "/bin/sh"
+                  - "-c"
+                  - "curl --retry 10 http://${HOSTS_DISCO_SERVICE_HOST}:${HOSTS_DISCO_SERVICE_PORT}/start.sh | sh"
 
       volumes:
         - name: hadoop-config
