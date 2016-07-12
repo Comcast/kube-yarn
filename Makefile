@@ -9,7 +9,7 @@ NAMESPACE_FILES=$(addprefix $(MANIFESTS)/,yarn-cluster-namespace.yaml)
 HOSTS_DISCO_FILES_BASE=hosts-disco-service.yaml hosts-disco-controller.yaml
 HOSTS_DISCO_FILES=$(addprefix $(MANIFESTS)/,$(HOSTS_DISCO_FILES_BASE))
 
-HDFS_FILES_BASE=hdfs-nn-service.yaml hdfs-nn-controller.yaml
+HDFS_FILES_BASE=hdfs-nn-service.yaml hdfs-nn-controller.yaml hdfs-dn-service.yaml hdfs-dn-controller.yaml
 HDFS_FILES=$(addprefix $(MANIFESTS)/,$(HDFS_FILES_BASE))
 
 YARN_FILES_BASE=yarn-rm-service.yaml yarn-nm-service.yaml yarn-rm-controller.yaml yarn-nm-controller.yaml
