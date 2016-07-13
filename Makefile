@@ -33,14 +33,6 @@ ifndef KUBECTL_BIN
 endif
 	$(eval KUBECTL := kubectl --namespace $(NAMESPACE))
 
-WEAVE := $(shell command -v weave 2> /dev/null)
-weave:
-ifndef WEAVE
-	$(warning Installing weave)
-	curl --location --silent git.io/weave --output /usr/local/bin/weave
-	chmod +x /usr/local/bin/weave
-endif
-
 # Create by file
 $(MANIFESTS)/%.yaml: kubectl
 	$(KUBECTL) create -f $@
@@ -211,64 +203,22 @@ delete-%-pf: kubectl
 delete-pf: kubectl delete-dashboard-canary-pf delete-zeppelin-controller-pf delete-yarn-rm-pf delete-hosts-disco-pf
 
 ### Local cluster targets
-KID := $(shell command -v kid 2> /dev/null)
-kid:
-ifndef KID
-	$(warning Installing Kubernetes In Docker (kid))
-	curl -sfL https://raw.githubusercontent.com/danisla/kid/docker-mac/kid > /usr/local/bin/kid
-	chmod +x /usr/local/bin/kid
-endif
+MINIKUBE_BIN=/usr/local/bin/minikube
+$(MINIKUBE_BIN):
+	curl -f -L https://github.com/kubernetes/minikube/releases/download/v0.5.0/minikube-darwin-amd64 > /usr/local/bin/minikube
+	chmod +x /usr/local/bin/minikube
 
-# Discovery via docker.local address
-avahi:
-	docker run -d --name avahi-docker --net host --restart always -e AVAHI_HOST=docker danisla/avahi:latest
-stop-avahi:
-	-docker kill avahi-docker && docker rm avahi-docker
+MINIKUBE_MIN_MEM=8192
+MINIKUBE_VM_NAME=minikubeVM
+minikube: $(MINIKUBE_BIN)
+	@NCPU=$$(sysctl -n hw.ncpu) && if [ "$$(minikube status)" == "Does Not Exist" ]; then \
+		$(MINIKUBE_BIN) start --memory $(MINIKUBE_MIN_MEM) --cpus $$(sysctl -n hw.ncpu) ; \
+	else \
+		eval $$(VBoxManage showvminfo --machinereadable $(MINIKUBE_VM_NAME) | egrep 'cpus|memory' | xargs echo export ) ; \
+		if [ "$$cpus" -ne "$$NCPU" ]; then echo "ERROR: minikube started with $$cpus cpus, expected $$NCPU" ; exit 1 ; fi ; \
+		if [ "$$memory" -lt $(MINIKUBE_MIN_MEM) ]; then echo "ERROR: minikube started with $$memory memory, expected >= $(MINIKUBE_MIN_MEM)" ; exit 1 ; fi ; \
+		minikube start ; \
+	fi
 
-kid-up: kid
-	kid up
-	# Test it out
-	kubectl cluster-info
-
-kid-down: clean delete-pf stop-avahi delete-weavescope
-	kid down
-
-kube-clean:
-	-docker-machine ssh default "mount |grep -i kube | awk '{print $$3}'|xargs sudo umount >/dev/null 2>&1"
-	docker-machine ssh default -t "sudo rm -Rf /var/lib/kubelet"
-
-start-k8s: weave kubectl
-	# weave
-	weave launch
-	weave expose -h moby.weave.local
-
-	# Kubernetes Anywhere
-	docker run --rm \
-	  --volume="/:/rootfs" \
-	  --volume="/var/run/weave/weave.sock:/docker.sock" \
-	    weaveworks/kubernetes-anywhere:toolbox-v1.2 \
-	      sh -c 'setup-single-node && compose -p kube up -d'
-
-	# SkyDNS
-	kubectl create -f https://git.io/vrjpn
-
-	# Canary Dashboard
-	kubectl create -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard-canary.yaml
-
-	# Test it out
-	kubectl cluster-info
-
-stop-k8s: weave kubectl clean delete-pf delete-weavescope
-	# Delete SkyDNS
-	-kubectl delete -f https://git.io/vrjpn
-	# Delete Canary Dashboard
-	-kubectl delete -f https://raw.githubusercontent.com/kubernetes/dashboard/master/src/deploy/kubernetes-dashboard-canary.yaml
-	-docker run --rm \
-	  --volume="/:/rootfs" \
-	  --volume="/var/run/weave/weave.sock:/docker.sock" \
-	    weaveworks/kubernetes-anywhere:toolbox-v1.2 \
-	      sh -c 'setup-single-node && compose -p kube down'
-	-weave stop
-	-docker rm -v kubelet-volumes
-	-docker rm -v weavevolumes-1.6.0
-	-docker rm -v weavedb
+stop-minikube: $(MINIKUBE_BIN)
+	minikube stop

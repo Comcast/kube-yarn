@@ -6,25 +6,23 @@
 
 ## Running locally
 
-This repo uses [`kubernetes-anywhere`](https://github.com/kubernetes/kubernetes-anywhere) to start k8s cluster locally with [Docker Machine](https://www.docker.com/products/docker-toolbox)
+This repo uses [`minikube`](https://github.com/kubernetes/minikube) to start a k8s cluster locally.
 
 The [`Makefile`](./Makefile) contains targets for starting the cluster and helper targets for `kubectl` to apply the K8S manifests and interact with the pods.
 
-When running locally with Docker, make sure your Docker for Mac or Docker Machine have enough resources allocated to them, you should set this to at least 8GB of memory and 8 CPUs if possible. If not set, the pods won't have enough resources to fully start and will be stuck in the `Pending` creation phase.
+When running locally with minikube, make sure your VM has enough resources, you should set the number of cpus to 8 and memory to 8192. If not set, the pods won't have enough resources to fully start and will be stuck in the `Pending` creation phase.
 
-If using Docker for Mac (beta)
-
-```
-make start-k8s
-```
-
-If using Docker Machine
+Starting minikube manually:
 
 ```
-make kid-up
+minikube start --cpus 8 --memory 8192
 ```
 
-OPTIONAL: to get your docker machine to resolve to `docker.local` run this: `docker run -d --name avahi-docker --net host --restart always -e AVAHI_HOST=docker danisla/avahi:latest`
+Or, start with the Makefile which will download minikube and start the cluster:
+
+```
+make minikube
+```
 
 ## Start the YARN cluster:
 
@@ -116,14 +114,12 @@ kubectl delete ds weavescope-probe && kubectl delete rc,services weavescope-app
 
 Shutdown the cluster
 
-Docker for Mac:
-
 ```
-make stop-k8s
+minikube stop
 ```
 
-Docker Machine:
+Or:
 
 ```
-make kid-down
+make stop-minikube
 ```
