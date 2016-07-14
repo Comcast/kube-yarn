@@ -4,8 +4,7 @@ metadata:
   name: yarn-rm
   namespace: yarn-cluster
 spec:
-  type: ClusterIP
-  sessionAffinity: ClientIP
+  clusterIP: None
   selector:
     component: yarn-rm
   ports:
