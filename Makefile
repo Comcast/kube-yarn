@@ -105,16 +105,6 @@ scale-nm: kubectl
 create-zeppelin: $(ZEPPELIN_FILES)
 delete-zeppelin: delete-zeppelin-controller-pf $(addsuffix .delete,$(ZEPPELIN_FILES))
 
-
-### Weave Scope
-create-weavescope: kubectl
-	kubectl create -f 'https://scope.weave.works/launch/k8s/weavescope.yaml' --validate=false
-	@while [[ -z `kubectl get pod --selector=weavescope-component=weavescope-app -o json | jq 'select(.items[].status.phase=="Running") | true'` ]]; do echo "Waiting for weavescope pod" ; sleep 2; done
-	make weavescope-pf
-
-delete-weavescope: delete-weavescope-pf
-	-kubectl delete -f 'https://scope.weave.works/launch/k8s/weavescope.yaml'
-
 ### Helper targets
 get-ns: kubectl
 	$(KUBECTL) get ns
@@ -146,14 +136,6 @@ get-rm-pod: wait-for-yarn-rm-pod
 get-zeppelin-pod: wait-for-zeppelin-pod
 	$(eval ZEPPELIN_POD := $(shell $(KUBECTL) get pods -l component=zeppelin -o jsonpath={.items..metadata.name}))
 	echo $(ZEPPELIN_POD)
-
-get-canary-pod: kubectl
-	$(eval CANARY_POD := $(shell kubectl --namespace kube-system get pod --selector=app=kubernetes-dashboard-canary -o jsonpath={.items..metadata.name}))
-	echo $(CANARY_POD)
-
-get-weavescope-pod: kubectl
-	$(eval WEAVESCOPE_POD := $(shell kubectl --namespace default get pod --selector=weavescope-component=weavescope-app -o jsonpath={.items..metadata.name}))
-	echo $(WEAVESCOPE_POD)
 
 nn-logs: kubectl get-nn-pod
 	$(KUBECTL) logs $(NAMENODE_POD)
@@ -191,34 +173,10 @@ hosts-disco-pf: get-hosts-disco-pod
 
 port-forward: rm-pf zeppelin-pf
 
-canary-pf: get-canary-pod
-	kubectl --namespace kube-system port-forward $(CANARY_POD) 31999:9090 2>/dev/null &
-
-weavescope-pf: get-weavescope-pod
-	kubectl --namespace default port-forward $(WEAVESCOPE_POD) 4040 2>/dev/null &
-
 delete-%-pf: kubectl
 	-pkill -f "kubectl.*port-forward.*$*.*"
 
-delete-pf: kubectl delete-dashboard-canary-pf delete-zeppelin-controller-pf delete-yarn-rm-pf delete-hosts-disco-pf
+delete-pf: kubectl delete-zeppelin-controller-pf delete-yarn-rm-pf delete-hosts-disco-pf
 
-### Local cluster targets
-MINIKUBE_BIN=/usr/local/bin/minikube
-$(MINIKUBE_BIN):
-	curl -f -L https://github.com/kubernetes/minikube/releases/download/v0.5.0/minikube-darwin-amd64 > /usr/local/bin/minikube
-	chmod +x /usr/local/bin/minikube
-
-MINIKUBE_MIN_MEM=8192
-MINIKUBE_VM_NAME=minikubeVM
-minikube: $(MINIKUBE_BIN)
-	@NCPU=$$(sysctl -n hw.ncpu) && if [ "$$(minikube status)" == "Does Not Exist" ]; then \
-		$(MINIKUBE_BIN) start --memory $(MINIKUBE_MIN_MEM) --cpus $$(sysctl -n hw.ncpu) ; \
-	else \
-		eval $$(VBoxManage showvminfo --machinereadable $(MINIKUBE_VM_NAME) | egrep 'cpus|memory' | xargs echo export ) ; \
-		if [ "$$cpus" -ne "$$NCPU" ]; then echo "ERROR: minikube started with $$cpus cpus, expected $$NCPU" ; exit 1 ; fi ; \
-		if [ "$$memory" -lt $(MINIKUBE_MIN_MEM) ]; then echo "ERROR: minikube started with $$memory memory, expected >= $(MINIKUBE_MIN_MEM)" ; exit 1 ; fi ; \
-		minikube start ; \
-	fi
-
-stop-minikube: $(MINIKUBE_BIN)
-	minikube stop
+-include localkube.mk
+-include weavescope.mk
