@@ -47,6 +47,19 @@ if [[ "${HOSTNAME}" =~ "yarn-rm" ]]; then
 fi
 
 if [[ "${HOSTNAME}" =~ "yarn-nm" ]]; then
+  sed -i '/<\/configuration>/d' $HADOOP_PREFIX/etc/hadoop/yarn-site.xml
+  cat >> $HADOOP_PREFIX/etc/hadoop/yarn-site.xml <<- EOM
+  <property>
+    <name>yarn.nodemanager.resource.memory-mb</name>
+    <value>${MY_MEM_LIMIT:-2048}</value>
+  </property>
+
+  <property>
+    <name>yarn.nodemanager.resource.cpu-vcores</name>
+    <value>${MY_CPU_LIMIT:-2}</value>
+  </property>
+EOM
+  echo '</configuration>' >> $HADOOP_PREFIX/etc/hadoop/yarn-site.xml
   cp ${CONFIG_DIR}/start-yarn-nm.sh $HADOOP_PREFIX/sbin/
   cd $HADOOP_PREFIX/sbin
   chmod +x start-yarn-nm.sh

@@ -18,16 +18,6 @@
   </property>
 
   <property>
-    <name>yarn.nodemanager.resource.memory-mb</name>
-    <value>2048</value>
-  </property>
-
-  <property>
-    <name>yarn.nodemanager.resource.cpu-vcores</name>
-    <value>4</value>
-  </property>
-
-  <property>
     <description>List of directories to store localized files in.</description>
     <name>yarn.nodemanager.local-dirs</name>
     <value>/var/lib/hadoop-yarn/cache/${user.name}/nm-local-dir</value>

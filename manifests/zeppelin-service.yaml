@@ -4,8 +4,7 @@ metadata:
   name: zeppelin
   namespace: yarn-cluster
 spec:
-  type: ClusterIP
-  sessionAffinity: ClientIP
+  type: NodePort
   selector:
     component: zeppelin
   ports:
