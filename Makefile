@@ -180,3 +180,4 @@ delete-pf: kubectl delete-zeppelin-controller-pf delete-yarn-rm-pf delete-hosts-
 
 -include localkube.mk
 -include weavescope.mk
+-include custom.mk
