@@ -26,8 +26,8 @@ spec:
               memory: "2048Mi"
               cpu: "1000m"
             limits:
-              memory: "2048Mi"
-              cpu: "1000m"
+              memory: "4096Mi"
+              cpu: "2000m"
           volumeMounts:
             - name: hadoop-config
               mountPath: /usr/hadoop-2.6.3/etc/hadoop

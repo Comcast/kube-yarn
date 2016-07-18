@@ -92,7 +92,9 @@ delete-apps: delete-zeppelin delete-yarn delete-hdfs
 ### HDFS
 create-hdfs: $(HDFS_FILES)
 delete-hdfs: $(addsuffix .delete,$(HDFS_FILES))
-
+scale-dn: kubectl
+	@IN="" && until [ -n "$$IN" ]; do read -p "Number of HDFS Data Node replicas: " IN; done ; \
+	$(KUBECTL) scale rc hdfs-dn-controller --replicas $${IN}
 
 ### YARN
 create-yarn: $(YARN_FILES)
