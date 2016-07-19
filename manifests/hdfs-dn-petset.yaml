@@ -11,7 +11,7 @@ spec:
   - name: dfs
     port: 9000
     protocol: TCP
-  # *.hdfs-dn.default.svc.cluster.local
+  # *.hdfs-dn.yarn-cluster.svc.cluster.local
   clusterIP: None
   selector:
     component: hdfs-dn

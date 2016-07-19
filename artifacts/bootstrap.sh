@@ -28,7 +28,7 @@ cd $HADOOP_PREFIX/share/hadoop/common ; for cp in ${ACP//,/ }; do  echo == $cp; 
 if [[ "${HOSTNAME}" =~ "hdfs-nn" ]]; then
   [[ ! -d /root/hdfs/namenode/current || ${FORMAT_NAMENODE} == true ]] && echo "Formatting namenode" && $HADOOP_PREFIX/bin/hdfs namenode -format -force -nonInteractive
 
-  sed -i s/hdfs-nn:9000/0.0.0.0:9000/ /usr/local/hadoop/etc/hadoop/core-site.xml
+  sed -i s/hdfs://hdfs-nn-0.hdfs-nn.yarn-cluster.svc.cluster.local:9000/0.0.0.0:9000/ /usr/local/hadoop/etc/hadoop/core-site.xml
   service sshd start
   $HADOOP_PREFIX/sbin/hadoop-daemon.sh start namenode
   $HADOOP_PREFIX/sbin/hadoop-daemon.sh start datanode
@@ -39,7 +39,7 @@ if [[ "${HOSTNAME}" =~ "hdfs-dn" ]]; then
 fi
 
 if [[ "${HOSTNAME}" =~ "yarn-rm" ]]; then
-  sed -i s/yarn-rm-0/0.0.0.0/ $HADOOP_PREFIX/etc/hadoop/yarn-site.xml
+  sed -i s/yarn-rm-0.yarn-rm.yarn-cluster.svc.cluster.local/0.0.0.0/ $HADOOP_PREFIX/etc/hadoop/yarn-site.xml
   cp ${CONFIG_DIR}/start-yarn-rm.sh $HADOOP_PREFIX/sbin/
   cd $HADOOP_PREFIX/sbin
   chmod +x start-yarn-rm.sh
