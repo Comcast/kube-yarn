@@ -142,5 +142,4 @@ test: wait-for-pod-yarn-nm-0
 	$(KUBECTL) exec -it yarn-nm-0 -- /usr/local/hadoop/bin/hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-2.6.0-tests.jar TestDFSIO -write -nrFiles 5 -fileSize 128MB -resFile /tmp/TestDFSIOwrite.txt
 
 -include localkube.mk
--include weavescope.mk
 -include custom.mk
