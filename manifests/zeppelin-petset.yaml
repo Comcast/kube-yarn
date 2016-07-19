@@ -5,7 +5,7 @@ metadata:
   name: zeppelin
   namespace: yarn-cluster
   labels:
-    app: zeppelin
+    component: zeppelin
 spec:
   type: NodePort
   ports:
@@ -13,7 +13,7 @@ spec:
     name: web
   # *.zeppelin.default.svc.cluster.local
   selector:
-    app: zeppelin
+    component: zeppelin
 ---
 apiVersion: apps/v1alpha1
 kind: PetSet
@@ -25,7 +25,7 @@ spec:
   template:
     metadata:
       labels:
-        app: zeppelin
+        component: zeppelin
       annotations:
         pod.alpha.kubernetes.io/initialized: "true"
     spec:

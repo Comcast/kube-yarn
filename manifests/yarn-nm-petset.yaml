@@ -5,7 +5,7 @@ metadata:
   name: yarn-nm
   namespace: yarn-cluster
   labels:
-    app: yarn-nm
+    component: yarn-nm
 spec:
   ports:
   - port: 8088
@@ -15,7 +15,7 @@ spec:
   # *.yarn-nm.default.svc.cluster.local
   clusterIP: None
   selector:
-    app: yarn-nm
+    component: yarn-nm
 ---
 apiVersion: apps/v1alpha1
 kind: PetSet
@@ -27,7 +27,7 @@ spec:
   template:
     metadata:
       labels:
-        app: yarn-nm
+        component: yarn-nm
       annotations:
         pod.alpha.kubernetes.io/initialized: "true"
     spec:

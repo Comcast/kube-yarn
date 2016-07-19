@@ -5,7 +5,7 @@ metadata:
   name: hdfs-nn
   namespace: yarn-cluster
   labels:
-    app: hdfs-nn
+    component: hdfs-nn
 spec:
   ports:
   - name: dfs
@@ -14,7 +14,7 @@ spec:
   # *.hdfs-nn.default.svc.cluster.local
   clusterIP: None
   selector:
-    app: hdfs-nn
+    component: hdfs-nn
 ---
 apiVersion: apps/v1alpha1
 kind: PetSet
@@ -26,7 +26,7 @@ spec:
   template:
     metadata:
       labels:
-        app: hdfs-nn
+        component: hdfs-nn
       annotations:
         pod.alpha.kubernetes.io/initialized: "true"
     spec:
