@@ -43,6 +43,20 @@ You should now be able to access the following:
 - YARN WebUI: `http://localhost:8088`
 - Zeppelin: `http://localhost:8081`
 
+### Full stack test
+
+Test hdfs, yarn and mapred using `TestDFSIO`, submitted from one of the node managers:
+
+```
+make test
+```
+
+Which runs this command on `yarn-nm-0`:
+
+```
+/usr/local/hadoop/bin/hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-2.6.0-tests.jar TestDFSIO -write -nrFiles 5 -fileSize 128MB -resFile /tmp/TestDFSIOwrite.txt
+```
+
 ### Spark on YARN in Zeppelin
 
 In your browser, go to Zeppelin at: http://localhost:8081
