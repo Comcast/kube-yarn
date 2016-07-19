@@ -10,7 +10,7 @@ spec:
   ports:
   - port: 8088
     name: web
-  # *.yarn-rm.default.svc.cluster.local
+  # *.yarn-rm.yarn-cluster.svc.cluster.local
   clusterIP: None
   selector:
     component: yarn-rm

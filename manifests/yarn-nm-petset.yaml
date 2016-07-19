@@ -12,7 +12,7 @@ spec:
     name: web
   - port: 8082
     name: web2
-  # *.yarn-nm.default.svc.cluster.local
+  # *.yarn-nm.yarn-cluster.svc.cluster.local
   clusterIP: None
   selector:
     component: yarn-nm

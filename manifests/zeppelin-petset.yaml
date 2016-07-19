@@ -11,7 +11,7 @@ spec:
   ports:
   - port: 8080
     name: web
-  # *.zeppelin.default.svc.cluster.local
+  # *.zeppelin.yarn-cluster.svc.cluster.local
   selector:
     component: zeppelin
 ---
