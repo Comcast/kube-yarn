@@ -8,10 +8,10 @@
   </property>
   <property>
     <name>mapreduce.jobhistory.address</name>
-    <value>yarn-rm:10020</value>
+    <value>yarn-rm-0.yarn-rm.yarn-cluster.svc.cluster.local:10020</value>
   </property>
   <property>
     <name>mapreduce.jobhistory.webapp.address</name>
-    <value>yarn-rm:19888</value>
+    <value>yarn-rm-0.yarn-rm.yarn-cluster.svc.cluster.local:19888</value>
   </property>
 </configuration>

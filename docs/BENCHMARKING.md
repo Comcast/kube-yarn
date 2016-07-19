@@ -16,3 +16,9 @@ Running the `TestDFSIO` program from Zeppelin notebook:
 %sh
 /usr/hadoop-2.6.3/bin/hadoop jar /usr/hadoop-2.6.3/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-2.6.3-tests.jar TestDFSIO -write -nrFiles 5 -fileSize 1GB -resFile /tmp/TestDFSIOwrite.txt
 ```
+
+From yarn-nm container:
+
+```
+/usr/local/hadoop/bin/hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-2.6.0-tests.jar TestDFSIO -write -nrFiles 5 -fileSize 128MB -resFile /tmp/TestDFSIOwrite.txt
+```

@@ -35,14 +35,27 @@ This will create all of the components for the cluster.
 Run this to create port forwards to `localhost`:
 
 ```
-make port-forward
+make pf
 ```
 
 You should now be able to access the following:
 
 - YARN WebUI: `http://localhost:8088`
 - Zeppelin: `http://localhost:8081`
-- k8S Canary Dashboard: `http://localhost:31999`
+
+### Full stack test
+
+Test hdfs, yarn and mapred using `TestDFSIO`, submitted from one of the node managers:
+
+```
+make test
+```
+
+Which runs this command on `yarn-nm-0`:
+
+```
+/usr/local/hadoop/bin/hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-2.6.0-tests.jar TestDFSIO -write -nrFiles 5 -fileSize 128MB -resFile /tmp/TestDFSIOwrite.txt
+```
 
 ### Spark on YARN in Zeppelin
 
@@ -58,18 +71,6 @@ Press `shift-enter` to execute the paragraph
 
 The first command executed creates the spark job on yarn and will take a few seconds, then you should get the result `1000` when complete.
 
-### Using Weave Scope (Optional)
-
-Run [Weave Scope](https://www.weave.works/docs/scope/0.15.0/installing/#k8s) to visualize and access pods in the cluster:
-
-```
-make create-weavescope
-```
-
-Weave Scope is now available at: http://localhost:4040
-
-NOTE: it may take a few seconds for weavescope to discover all of the nodes and pods.
-
 ## Make targets:
 
 ### `init`
@@ -80,7 +81,7 @@ Create the namespace, configmaps service account and hosts-disco service.
 
 Creates hdfs, yarn and zeppelin apps.
 
-### `port-forward`
+### `pf`
 
 Creates local port forwards for yarn and zeppelin.
 
@@ -88,15 +89,19 @@ Creates local port forwards for yarn and zeppelin.
 
 Gets the state of HDFS.
 
-### `nn-shell`
+### `get-yarn-nodes`
+
+Lists the registered yarn nodes by executing this in the node manager pod: `yarn node -list`
+
+### `shell-hdfs-nn-0`
 
 Drops into a shell on the namenode
 
-### `rm-shell`
+### `shell-yarn-rm-0`
 
 Drops into a shell on the resource manager.
 
-### `zeppelin-shell`
+### `shell-zeppelin-0`
 
 Drops into a shell on the zeppelin container.
 
@@ -104,12 +109,6 @@ Drops into a shell on the zeppelin container.
 
 ```
 make clean
-```
-
-Stopping Weave Scope (if started)
-
-```
-kubectl delete ds weavescope-probe && kubectl delete rc,services weavescope-app
 ```
 
 Shutdown the cluster
