@@ -1,0 +1,54 @@
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: zeppelin
+  namespace: yarn-cluster
+  labels:
+    app: zeppelin
+spec:
+  type: NodePort
+  ports:
+  - port: 8080
+    name: web
+  # *.zeppelin.default.svc.cluster.local
+  selector:
+    app: zeppelin
+---
+apiVersion: apps/v1alpha1
+kind: PetSet
+metadata:
+  name: zeppelin
+spec:
+  serviceName: "zeppelin"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: zeppelin
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: zeppelin
+        image: dylanmei/zeppelin:0.6.0
+        env:
+        - name: ZEPPELIN_PORT
+          value: "8080"
+        - name: MASTER
+          value: "yarn-client"
+        resources:
+          requests:
+            memory: "1024Mi"
+            cpu: "1000m"
+          limits:
+            memory: "4096Mi"
+            cpu: "2000m"
+        volumeMounts:
+          - name: hadoop-config
+            mountPath: /usr/hadoop-2.6.3/etc/hadoop
+      volumes:
+        - name: hadoop-config
+          configMap:
+            name: hadoop-config

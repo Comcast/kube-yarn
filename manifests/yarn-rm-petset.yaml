@@ -1,0 +1,56 @@
+# A headless service to create DNS records
+apiVersion: v1
+kind: Service
+metadata:
+  name: yarn-rm
+  namespace: yarn-cluster
+  labels:
+    app: yarn-rm
+spec:
+  ports:
+  - port: 8088
+    name: web
+  # *.yarn-rm.default.svc.cluster.local
+  clusterIP: None
+  selector:
+    app: yarn-rm
+---
+apiVersion: apps/v1alpha1
+kind: PetSet
+metadata:
+  name: yarn-rm
+spec:
+  serviceName: "yarn-rm"
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: yarn-rm
+      annotations:
+        pod.alpha.kubernetes.io/initialized: "true"
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: yarn-rm
+        image: sequenceiq/hadoop-docker:2.6.0
+        ports:
+        - containerPort: 8088
+          name: web
+        command:
+           - "/bin/bash"
+           - "/tmp/hadoop-config/bootstrap.sh"
+           - "-d"
+        resources:
+          requests:
+            memory: "1024Mi"
+            cpu: "100m"
+          limits:
+            memory: "2048Mi"
+            cpu: "2000m"
+        volumeMounts:
+          - name: hadoop-config
+            mountPath: /tmp/hadoop-config
+      volumes:
+        - name: hadoop-config
+          configMap:
+            name: hadoop-config

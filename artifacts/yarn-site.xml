@@ -4,7 +4,7 @@
 <configuration>
   <property>
     <name>yarn.resourcemanager.hostname</name>
-    <value>yarn-rm</value>
+    <value>yarn-rm-0</value>
   </property>
 
   <property>
