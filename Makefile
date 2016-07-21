@@ -139,7 +139,10 @@ delete-%-pf: kubectl
 delete-pf: kubectl delete-zeppelin-pf delete-yarn-rm-pf
 
 test: wait-for-pod-yarn-nm-0
-	$(KUBECTL) exec -it yarn-nm-0 -- /usr/local/hadoop/bin/hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-2.6.0-tests.jar TestDFSIO -write -nrFiles 5 -fileSize 128MB -resFile /tmp/TestDFSIOwrite.txt
+ifndef HADOOP_VERSION
+	$(error HADOOP_VERSION is not set)
+endif
+	$(KUBECTL) exec -it yarn-nm-0 -- /usr/local/hadoop/bin/hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-$(HADOOP_VERSION)-tests.jar TestDFSIO -write -nrFiles 5 -fileSize 128MB -resFile /tmp/TestDFSIOwrite.txt
 
 -include localkube.mk
 -include custom.mk
