@@ -32,7 +32,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: yarn-rm
-        image: sequenceiq/hadoop-docker:2.6.0
+        image: danisla/hadoop:2.6.4
         ports:
         - containerPort: 8088
           name: web
