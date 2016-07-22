@@ -115,20 +115,6 @@ Press `shift-enter` to execute the paragraph
 
 The first command executed creates the spark job on yarn and will take a few seconds, then you should get the result `1000` when complete.
 
-## Custom image
-
-If you want to compile additional native libraries, like [Protobuf](https://wiki.apache.org/hadoop/ProtocolBuffers), you can do so with the build targets in the [`image`](./image) directory.
-
-This `Makefile` will compile the hadoop native libraries and build the latest hadoop `2.6` and `2.7` docker images for use with the Kubernetes manifests.
-
-> Note that there isn't anything really unique about the docker image, as the K8S ConfigMap does most of the boostraping and is designed to work with generic hadoop docker images.
-
-This will build the hadoop 2.6 and 2.7 images with the natice libraries. You can push these to your own registry and update the manifests files to run your custom image.
-
-```
-cd image && make
-```
-
 ## Make targets:
 
 ### `init`
