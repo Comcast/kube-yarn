@@ -2,8 +2,9 @@
 
 : ${HADOOP_PREFIX:=/usr/local/hadoop}
 
-$HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
+. $HADOOP_PREFIX/etc/hadoop/hadoop-env.sh
 
+# Directory to find config artifacts
 CONFIG_DIR="/tmp/hadoop-config"
 
 # Copy config files from volume mount
@@ -17,24 +18,18 @@ for f in slaves core-site.xml hdfs-site.xml mapred-site.xml yarn-site.xml; do
   fi
 done
 
-rm /tmp/*.pid
-
-mkdir -p /root/hdfs/namenode
-mkdir -p /root/hdfs/datanode
-
 # installing libraries if any - (resource urls added comma separated to the ACP system variable)
 cd $HADOOP_PREFIX/share/hadoop/common ; for cp in ${ACP//,/ }; do  echo == $cp; curl -LO $cp ; done; cd -
 
 if [[ "${HOSTNAME}" =~ "hdfs-nn" ]]; then
-  [[ ! -d /root/hdfs/namenode/current || ${FORMAT_NAMENODE} == true ]] && echo "Formatting namenode" && $HADOOP_PREFIX/bin/hdfs namenode -format -force -nonInteractive
-
+  mkdir -p /root/hdfs/namenode
+  $HADOOP_PREFIX/bin/hdfs namenode -format -force -nonInteractive
   sed -i s/hdfs://hdfs-nn-0.hdfs-nn.yarn-cluster.svc.cluster.local:9000/0.0.0.0:9000/ /usr/local/hadoop/etc/hadoop/core-site.xml
-  service sshd start
   $HADOOP_PREFIX/sbin/hadoop-daemon.sh start namenode
-  $HADOOP_PREFIX/sbin/hadoop-daemon.sh start datanode
 fi
 
 if [[ "${HOSTNAME}" =~ "hdfs-dn" ]]; then
+  mkdir -p /root/hdfs/datanode
   $HADOOP_PREFIX/sbin/hadoop-daemon.sh start datanode
 fi
 
@@ -67,6 +62,8 @@ EOM
 fi
 
 if [[ $1 == "-d" ]]; then
+  until find ${HADOOP_PREFIX}/logs -mmin -1 | egrep -q '.*'; echo "`date`: Waiting for logs..." ; do sleep 2 ; done
+  tail -F ${HADOOP_PREFIX}/logs/* &
   while true; do sleep 1000; done
 fi
 
