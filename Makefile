@@ -79,20 +79,14 @@ delete-apps: delete-zeppelin delete-yarn delete-hdfs
 ### HDFS
 create-hdfs: $(HDFS_FILES)
 delete-hdfs: $(addsuffix .delete,$(HDFS_FILES)) delete-petset-pods-hdfs-dn delete-petset-pods-hdfs-nn
-scale-dn: kubectl
-	@IN="" && until [ -n "$$IN" ]; do read -p "Number of HDFS Data Node replicas: " IN; done ; \
-	$(KUBECTL) scale rc hdfs-dn-controller --replicas $${IN}
 
 ### YARN
 create-yarn: $(YARN_FILES)
 delete-yarn: delete-yarn-rm-pf $(addsuffix .delete,$(YARN_FILES)) delete-petset-pods-yarn-nm delete-petset-pods-yarn-rm
-scale-nm: kubectl
-	@IN="" && until [ -n "$$IN" ]; do read -p "Number of Node Manager replicas: " IN; done ; \
-	$(KUBECTL) scale rc yarn-nm-controller --replicas $${IN}
 
 ### Zeppelin
 create-zeppelin: $(ZEPPELIN_FILES)
-delete-zeppelin: delete-zeppelin-controller-pf $(addsuffix .delete,$(ZEPPELIN_FILES)) delete-petset-pods-zeppelin
+delete-zeppelin: delete-zeppelin-pf $(addsuffix .delete,$(ZEPPELIN_FILES)) delete-petset-pods-zeppelin
 
 ### Helper targets
 get-ns: kubectl
