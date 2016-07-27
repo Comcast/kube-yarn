@@ -2,8 +2,6 @@
 
 ![Architecture](docs/k8s_yarn_architecture.png)
 
-#### [Initial Design Document (Google Docs)](https://docs.google.com/document/d/1ZoKLWkHiZZPP-394aUTIOE9R7Vx88pgOC8NE0hkVn24/edit?usp=sharing)
-
 ## PetSet Overview
 
 The hadoop components are boostrapped using files from a `ConfigMap` to provide the init script and config xml files. This allows users to fully customize their distribution for their use cases.
