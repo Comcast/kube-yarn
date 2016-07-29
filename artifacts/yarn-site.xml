@@ -4,7 +4,12 @@
 <configuration>
   <property>
     <name>yarn.resourcemanager.hostname</name>
-    <value>yarn-rm-0.yarn-rm.yarn-cluster.svc.cluster.local</value>
+    <value>yarn-rm</value>
+  </property>
+
+  <property>
+    <name>yarn.nodemanager.vmem-check-enabled</name>
+    <value>false</value>
   </property>
 
   <property>

@@ -3,7 +3,7 @@
 <configuration>
    <property>
         <name>fs.defaultFS</name>
-        <value>hdfs://hdfs-nn-0.hdfs-nn.yarn-cluster.svc.cluster.local:9000/</value>
+        <value>hdfs://hdfs-nn:9000/</value>
         <description>NameNode URI</description>
     </property>
 </configuration>

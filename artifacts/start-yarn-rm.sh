@@ -32,4 +32,4 @@ HADOOP_LIBEXEC_DIR=${HADOOP_LIBEXEC_DIR:-$DEFAULT_LIBEXEC_DIR}
 # start nodeManager
 # "$bin"/yarn-daemons.sh --config $YARN_CONF_DIR  start nodemanager
 # start proxyserver
-#"$bin"/yarn-daemon.sh --config $YARN_CONF_DIR  start proxyserver
+"$bin"/yarn-daemon.sh --config $YARN_CONF_DIR  start proxyserver
