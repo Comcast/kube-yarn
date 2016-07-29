@@ -38,7 +38,7 @@ KUBECTL_BIN := $(shell command -v kubectl 2> /dev/null)
 kubectl:
 ifndef KUBECTL_BIN
 	$(warning installing kubectl)
-	curl -sf https://storage.googleapis.com/kubernetes-release/release/v1.2.4/bin/darwin/amd64/kubectl > /usr/local/bin/kubectl
+	curl -sf https://storage.googleapis.com/kubernetes-release/release/v1.3.3/bin/darwin/amd64/kubectl > /usr/local/bin/kubectl
 	chmod +x /usr/local/bin/kubectl
 endif
 	$(eval KUBECTL := kubectl --namespace $(NAMESPACE))
