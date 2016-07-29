@@ -15,6 +15,21 @@ spec:
   selector:
     component: yarn-rm
 ---
+# Service to access the yarn web ui
+apiVersion: v1
+kind: Service
+metadata:
+  name: yarn-ui
+  namespace: yarn-cluster
+  labels:
+    component: yarn-ui
+spec:
+  ports:
+  - port: 8088
+    name: web
+  selector:
+    component: yarn-rm
+---
 apiVersion: apps/v1alpha1
 kind: PetSet
 metadata:

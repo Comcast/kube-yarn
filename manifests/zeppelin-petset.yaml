@@ -32,7 +32,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: zeppelin
-        image: dylanmei/zeppelin:0.6.0
+        image: dylanmei/zeppelin:0.7.0
         env:
         - name: ZEPPELIN_PORT
           value: "8080"
