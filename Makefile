@@ -92,10 +92,18 @@ delete-apps: delete-zeppelin delete-yarn delete-hdfs
 ### HDFS
 create-hdfs: $(HDFS_FILES)
 delete-hdfs: $(addsuffix .delete,$(HDFS_FILES)) delete-petset-pods-hdfs-dn delete-petset-pods-hdfs-nn
+scale-dn: kubectl
+	@CURR=`$(KUBECTL) get petset hdfs-dn -o json | jq -r '.status.replicas'` ; \
+	IN="" && until [ -n "$$IN" ]; do read -p "Enter number of HDFS Data Node replicas (current: $$CURR): " IN; done ; \
+	$(KUBECTL) patch petset hdfs-dn -p '{"spec":{"replicas": '$$IN'}}'
 
 ### YARN
 create-yarn: $(YARN_FILES)
 delete-yarn: delete-yarn-rm-pf $(addsuffix .delete,$(YARN_FILES)) delete-petset-pods-yarn-nm delete-petset-pods-yarn-rm
+scale-nm: kubectl
+	@CURR=`$(KUBECTL) get petset yarn-nm -o json | jq -r '.status.replicas'` ; \
+	IN="" && until [ -n "$$IN" ]; do read -p "Enter number of YARN Node Manager replicas (current: $$CURR): " IN; done ; \
+	$(KUBECTL) patch petset yarn-nm -p '{"spec":{"replicas": '$$IN'}}'
 
 ### Zeppelin
 create-zeppelin: $(ZEPPELIN_FILES)
