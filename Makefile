@@ -1,3 +1,16 @@
+# Copyright 2016 Comcast Cable Communications Management, LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 NAMESPACE=yarn-cluster
 ENTITIES=namespace
@@ -132,10 +145,8 @@ delete-%-pf: kubectl
 
 delete-pf: kubectl delete-zeppelin-pf delete-yarn-rm-pf
 
+HADOOP_VERSION=$(shell grep "image: " manifests/yarn-rm-petset.yaml|cut -d'/' -f2|cut -d ':' -f2)
 test: wait-for-pod-yarn-nm-0
-ifndef HADOOP_VERSION
-	$(error HADOOP_VERSION is not set)
-endif
 	$(KUBECTL) exec -it yarn-nm-0 -- /usr/local/hadoop/bin/hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-$(HADOOP_VERSION)-tests.jar TestDFSIO -write -nrFiles 5 -fileSize 128MB -resFile /tmp/TestDFSIOwrite.txt
 
 -include localkube.mk
