@@ -37,7 +37,15 @@ spec:
         - name: ZEPPELIN_PORT
           value: "8080"
         - name: MASTER
-          value: "yarn-client"
+          value: "yarn"
+        - name: ZEPPELIN_JAVA_OPTS
+          value: >-
+            -Dspark.driver.memory=1g
+            -Dspark.executor.memory=1g
+        - name: SPARK_SUBMIT_OPTIONS
+          value: >-
+            --deploy-mode client
+            --num-executors 2
         resources:
           requests:
             memory: "1024Mi"
@@ -47,7 +55,7 @@ spec:
             cpu: "2000m"
         volumeMounts:
           - name: hadoop-config
-            mountPath: /usr/hadoop-2.6.3/etc/hadoop
+            mountPath: /usr/hadoop-2.7.2/etc/hadoop
       volumes:
         - name: hadoop-config
           configMap:

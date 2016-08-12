@@ -34,7 +34,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: yarn-nm
-        image: danisla/hadoop:2.6.4
+        image: danisla/hadoop:2.7.2
         ports:
         - containerPort: 8088
           name: web
