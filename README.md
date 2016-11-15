@@ -1,6 +1,31 @@
 # YARN on Kubernetes
 
-![Architecture](docs/k8s_yarn_architecture.png)
+# Tags and Dockerfiles
+- `v1.0.0`, `latest` ([Dockerfile](https://github.com/Comcast/kube-yarn/blob/v1.0.0/Dockerfile)), [Hadoop 2.7.2](https://hub.docker.com/r/danisla/hadoop/), [Zeppelin 0.7.0](https://hub.docker.com/r/dylanmei/zeppelin/)
+
+# Docker image for kube-yarn
+
+Image for deploying the kube-yarn artifacts without any local dependencies.
+
+## Example usage:
+
+Invoke the default `make` target to deploy the full stack using the kubeconfig from your current home directory.
+
+```
+docker run -it --rm -v ${HOME}/.kube/config:/root/.kube/config:ro danisla/kube-yarn:latest
+```
+
+> Make sure to mount any additional volumes for files referenced within the kube config.
+
+To remove the resources by invoking the `clean` target:
+
+```
+docker run -it --rm -v ${HOME}/.kube/config:/root/.kube/config:ro danisla/kube-yarn:latest clean
+```
+
+## Architecture Diagram
+
+![Architecture](https://github.comcast.com/disla001c/kube-yarn/blob/master/docs/k8s_yarn_architecture.png)
 
 ## PetSet Overview
 
