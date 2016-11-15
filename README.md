@@ -25,7 +25,7 @@ docker run -it --rm -v ${HOME}/.kube/config:/root/.kube/config:ro danisla/kube-y
 
 ## Architecture Diagram
 
-![Architecture](https://www.github.com/Comcast/kube-yarn/blob/master/docs/k8s_yarn_architecture.png)
+![Architecture](https://github.com/Comcast/kube-yarn/raw/master/docs/k8s_yarn_architecture.png)
 
 ## PetSet Overview
 
