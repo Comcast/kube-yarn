@@ -2,37 +2,35 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: hdfs-nn
+  name: hdfs-dn
   namespace: yarn-cluster
   labels:
-    component: hdfs-nn
+    component: hdfs-dn
 spec:
   ports:
   - name: dfs
     port: 9000
     protocol: TCP
-  # *.hdfs-nn.yarn-cluster.svc.cluster.local
+  # *.hdfs-dn.yarn-cluster.svc.cluster.local
   clusterIP: None
   selector:
-    component: hdfs-nn
+    component: hdfs-dn
 ---
-apiVersion: apps/v1alpha1
-kind: PetSet
+apiVersion: apps/v1beta1
+kind: StatefulSet
 metadata:
-  name: hdfs-nn
+  name: hdfs-dn
 spec:
-  serviceName: "hdfs-nn"
+  serviceName: "hdfs-dn"
   replicas: 1
   template:
     metadata:
       labels:
-        component: hdfs-nn
-      annotations:
-        pod.alpha.kubernetes.io/initialized: "true"
+        component: hdfs-dn
     spec:
       terminationGracePeriodSeconds: 0
       containers:
-      - name: hdfs-nn
+      - name: hdfs-dn
         image: danisla/hadoop:2.7.2
         command:
            - "/bin/bash"

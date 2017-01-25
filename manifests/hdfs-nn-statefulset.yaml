@@ -2,55 +2,36 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: yarn-rm
+  name: hdfs-nn
   namespace: yarn-cluster
   labels:
-    component: yarn-rm
+    component: hdfs-nn
 spec:
   ports:
-  - port: 8088
-    name: web
-  # *.yarn-rm.yarn-cluster.svc.cluster.local
+  - name: dfs
+    port: 9000
+    protocol: TCP
+  # *.hdfs-nn.yarn-cluster.svc.cluster.local
   clusterIP: None
   selector:
-    component: yarn-rm
+    component: hdfs-nn
 ---
-# Service to access the yarn web ui
-apiVersion: v1
-kind: Service
+apiVersion: apps/v1beta1
+kind: StatefulSet
 metadata:
-  name: yarn-ui
-  namespace: yarn-cluster
-  labels:
-    component: yarn-ui
+  name: hdfs-nn
 spec:
-  ports:
-  - port: 8088
-    name: web
-  selector:
-    component: yarn-rm
----
-apiVersion: apps/v1alpha1
-kind: PetSet
-metadata:
-  name: yarn-rm
-spec:
-  serviceName: "yarn-rm"
+  serviceName: "hdfs-nn"
   replicas: 1
   template:
     metadata:
       labels:
-        component: yarn-rm
-      annotations:
-        pod.alpha.kubernetes.io/initialized: "true"
+        component: hdfs-nn
     spec:
       terminationGracePeriodSeconds: 0
       containers:
-      - name: yarn-rm
+      - name: hdfs-nn
         image: danisla/hadoop:2.7.2
-        ports:
-        - containerPort: 8088
-          name: web
         command:
            - "/bin/bash"
            - "/tmp/hadoop-config/bootstrap.sh"
@@ -61,7 +42,7 @@ spec:
             cpu: "100m"
           limits:
             memory: "2048Mi"
-            cpu: "2000m"
+            cpu: "1000m"
         volumeMounts:
           - name: hadoop-config
             mountPath: /tmp/hadoop-config

@@ -15,8 +15,8 @@ spec:
   selector:
     component: zeppelin
 ---
-apiVersion: apps/v1alpha1
-kind: PetSet
+apiVersion: apps/v1beta1
+kind: StatefulSet
 metadata:
   name: zeppelin
 spec:
@@ -26,8 +26,6 @@ spec:
     metadata:
       labels:
         component: zeppelin
-      annotations:
-        pod.alpha.kubernetes.io/initialized: "true"
     spec:
       terminationGracePeriodSeconds: 0
       containers:
