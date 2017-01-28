@@ -19,13 +19,13 @@ MANIFESTS=./manifests
 NAMESPACE_FILES_BASE=yarn-cluster-namespace.yaml
 NAMESPACE_FILES=$(addprefix $(MANIFESTS)/,yarn-cluster-namespace.yaml)
 
-HDFS_FILES_BASE=hdfs-nn-petset.yaml hdfs-dn-petset.yaml
+HDFS_FILES_BASE=hdfs-nn-statefulset.yaml hdfs-dn-statefulset.yaml
 HDFS_FILES=$(addprefix $(MANIFESTS)/,$(HDFS_FILES_BASE))
 
-YARN_FILES_BASE=yarn-rm-petset.yaml yarn-nm-petset.yaml
+YARN_FILES_BASE=yarn-rm-statefulset.yaml yarn-nm-statefulset.yaml
 YARN_FILES=$(addprefix $(MANIFESTS)/,$(YARN_FILES_BASE))
 
-ZEPPELIN_FILES_BASE=zeppelin-petset.yaml
+ZEPPELIN_FILES_BASE=zeppelin-statefulset.yaml
 ZEPPELIN_FILES=$(addprefix $(MANIFESTS)/,$(ZEPPELIN_FILES_BASE))
 
 all: init create-apps
@@ -55,7 +55,7 @@ $(MANIFESTS)/%.yaml.delete: kubectl
 delete-pod-%: kubectl
 	$(KUBECTL) delete pod $*
 
-delete-petset-pods-%: kubectl
+delete-statefulset-pods-%: kubectl
 	-@for pod in `$(KUBECTL) get pods -l component=$* -o json | jq -r '.items[].metadata.name'`; do make delete-pod-$$pod; done
 
 ### Namespace
@@ -91,30 +91,30 @@ delete-apps: delete-zeppelin delete-yarn delete-hdfs
 
 ### HDFS
 create-hdfs: $(HDFS_FILES)
-delete-hdfs: $(addsuffix .delete,$(HDFS_FILES)) delete-petset-pods-hdfs-dn delete-petset-pods-hdfs-nn
+delete-hdfs: $(addsuffix .delete,$(HDFS_FILES)) delete-statefulset-pods-hdfs-dn delete-statefulset-pods-hdfs-nn
 scale-dn: kubectl
-	@CURR=`$(KUBECTL) get petset hdfs-dn -o json | jq -r '.status.replicas'` ; \
+	@CURR=`$(KUBECTL) get statefulset hdfs-dn -o json | jq -r '.status.replicas'` ; \
 	IN="" && until [ -n "$$IN" ]; do read -p "Enter number of HDFS Data Node replicas (current: $$CURR): " IN; done ; \
-	$(KUBECTL) patch petset hdfs-dn -p '{"spec":{"replicas": '$$IN'}}'
+	$(KUBECTL) patch statefulset hdfs-dn -p '{"spec":{"replicas": '$$IN'}}'
 
 ### YARN
 create-yarn: $(YARN_FILES)
-delete-yarn: delete-yarn-rm-pf $(addsuffix .delete,$(YARN_FILES)) delete-petset-pods-yarn-nm delete-petset-pods-yarn-rm
+delete-yarn: delete-yarn-rm-pf $(addsuffix .delete,$(YARN_FILES)) delete-statefulset-pods-yarn-nm delete-statefulset-pods-yarn-rm
 scale-nm: kubectl
-	@CURR=`$(KUBECTL) get petset yarn-nm -o json | jq -r '.status.replicas'` ; \
+	@CURR=`$(KUBECTL) get statefulset yarn-nm -o json | jq -r '.status.replicas'` ; \
 	IN="" && until [ -n "$$IN" ]; do read -p "Enter number of YARN Node Manager replicas (current: $$CURR): " IN; done ; \
-	$(KUBECTL) patch petset yarn-nm -p '{"spec":{"replicas": '$$IN'}}'
+	$(KUBECTL) patch statefulset yarn-nm -p '{"spec":{"replicas": '$$IN'}}'
 
 ### Zeppelin
 create-zeppelin: $(ZEPPELIN_FILES)
-delete-zeppelin: delete-zeppelin-pf $(addsuffix .delete,$(ZEPPELIN_FILES)) delete-petset-pods-zeppelin
+delete-zeppelin: delete-zeppelin-pf $(addsuffix .delete,$(ZEPPELIN_FILES)) delete-statefulset-pods-zeppelin
 
 ### Helper targets
 get-ns: kubectl
 	$(KUBECTL) get ns
 
-get-petsets: kubectl
-	$(KUBECTL) get petsets
+get-statefulsets: kubectl
+	$(KUBECTL) get statefulsets
 
 get-pods: kubectl
 	$(KUBECTL) get pods
@@ -153,7 +153,7 @@ delete-%-pf: kubectl
 
 delete-pf: kubectl delete-zeppelin-pf delete-yarn-rm-pf
 
-HADOOP_VERSION=$(shell grep "image: " manifests/yarn-rm-petset.yaml|cut -d'/' -f2|cut -d ':' -f2)
+HADOOP_VERSION=$(shell grep "image: " manifests/yarn-rm-statefulset.yaml|cut -d'/' -f2|cut -d ':' -f2)
 test: wait-for-pod-yarn-nm-0
 	$(KUBECTL) exec -it yarn-nm-0 -- /usr/local/hadoop/bin/hadoop jar /usr/local/hadoop/share/hadoop/mapreduce/hadoop-mapreduce-client-jobclient-$(HADOOP_VERSION)-tests.jar TestDFSIO -write -nrFiles 5 -fileSize 128MB -resFile /tmp/TestDFSIOwrite.txt
 

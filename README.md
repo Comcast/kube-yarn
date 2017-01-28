@@ -27,7 +27,7 @@ docker run -it --rm -v ${HOME}/.kube/config:/root/.kube/config:ro danisla/kube-y
 
 ![Architecture](https://github.com/Comcast/kube-yarn/raw/master/docs/k8s_yarn_architecture.png)
 
-## PetSet Overview
+## StatefulSet Overview
 
 The hadoop components are boostrapped using files from a `ConfigMap` to provide the init script and config xml files. This allows users to fully customize their distribution for their use cases.
 
