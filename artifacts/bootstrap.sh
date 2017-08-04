@@ -24,7 +24,7 @@ cd $HADOOP_PREFIX/share/hadoop/common ; for cp in ${ACP//,/ }; do  echo == $cp; 
 if [[ "${HOSTNAME}" =~ "hdfs-nn" ]]; then
   mkdir -p /root/hdfs/namenode
   $HADOOP_PREFIX/bin/hdfs namenode -format -force -nonInteractive
-  sed -i s/hdfs://hdfs-nn:9000/0.0.0.0:9000/ /usr/local/hadoop/etc/hadoop/core-site.xml
+  sed -i s/hdfs-nn/0.0.0.0/ /usr/local/hadoop/etc/hadoop/core-site.xml
   $HADOOP_PREFIX/sbin/hadoop-daemon.sh start namenode
 fi
 
