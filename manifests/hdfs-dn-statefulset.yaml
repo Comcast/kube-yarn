@@ -31,7 +31,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: hdfs-dn
-        image: danisla/hadoop:2.7.2
+        image: danisla/hadoop:2.7.3
         command:
            - "/bin/bash"
            - "/tmp/hadoop-config/bootstrap.sh"

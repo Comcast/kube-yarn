@@ -30,7 +30,7 @@ spec:
       terminationGracePeriodSeconds: 0
       containers:
       - name: zeppelin
-        image: dylanmei/zeppelin:0.7.0
+        image: dylanmei/zeppelin:0.7.2
         env:
         - name: ZEPPELIN_PORT
           value: "8080"
@@ -53,7 +53,7 @@ spec:
             cpu: "2000m"
         volumeMounts:
           - name: hadoop-config
-            mountPath: /usr/hadoop-2.7.2/etc/hadoop
+            mountPath: /usr/hadoop-2.7.3/etc/hadoop
       volumes:
         - name: hadoop-config
           configMap:
