@@ -28,7 +28,7 @@ ADD \
 RUN \
   cd /tmp/protobuf-${PROTOBUF_VERSION} && \
   ./configure && \
-  make && make install
+  make -j$(nproc) && make install
 
 ENV LD_LIBRARY_PATH /usr/local/lib
 ENV export LD_RUN_PATH /usr/local/lib

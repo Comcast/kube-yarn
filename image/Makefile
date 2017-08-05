@@ -2,8 +2,8 @@
 
 # Current apache hadoop releases: http://hadoop.apache.org/releases.html
 
-HADOOP_26_VERSION = 2.6.4
-HADOOP_27_VERSION = 2.7.2
+HADOOP_26_VERSION = 2.6.5
+HADOOP_27_VERSION = 2.7.3
 PROTOBUF_VERSION = 2.5.0
 
 DOCKER = docker
@@ -42,7 +42,7 @@ hadoop-%.tar.gz:
 
 ### Fetch protobuf source
 protobuf-%.tar.bz2:
-	curl -LO https://protobuf.googlecode.com/files/protobuf-$*.tar.bz2
+	curl -LO https://github.com/google/protobuf/releases/download/v$*/protobuf-$*.tar.bz2
 
 # Keep intermediate downloads.
 .PRECIOUS: protobuf-%.tar.bz2 hadoop-%-src.tar.gz hadoop-%.tar.gz
