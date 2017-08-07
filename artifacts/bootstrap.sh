@@ -30,6 +30,9 @@ fi
 
 if [[ "${HOSTNAME}" =~ "hdfs-dn" ]]; then
   mkdir -p /root/hdfs/datanode
+  #  wait up to 30 seconds for namenode
+  count=0 && while [[ $count -lt 15 && -z `curl -sf http://hdfs-nn:50070` ]]; do echo "Waiting for hdfs-nn" ; ((count=count+1)) ; sleep 2; done
+  [[ $count -eq 15 ]] && echo "Timeout waiting for hdfs-nn, exiting." && exit 1
   $HADOOP_PREFIX/sbin/hadoop-daemon.sh start datanode
 fi
 
@@ -58,6 +61,11 @@ EOM
   cp ${CONFIG_DIR}/start-yarn-nm.sh $HADOOP_PREFIX/sbin/
   cd $HADOOP_PREFIX/sbin
   chmod +x start-yarn-nm.sh
+
+  #  wait up to 30 seconds for resourcemanager
+  count=0 && while [[ $count -lt 15 && -z `curl -sf http://yarn-rm:8088/ws/v1/cluster/info` ]]; do echo "Waiting for yarn-rm" ; ((count=count+1)) ; sleep 2; done
+  [[ $count -eq 15 ]] && echo "Timeout waiting for hdfs-nn, exiting." && exit 1
+
   ./start-yarn-nm.sh
 fi
 
