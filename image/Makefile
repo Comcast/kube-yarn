@@ -3,7 +3,10 @@
 # Current apache hadoop releases: http://hadoop.apache.org/releases.html
 
 HADOOP_26_VERSION = 2.6.5
-HADOOP_27_VERSION = 2.7.3
+HADOOP_27_VERSION = 2.7.5
+HADOOP_28_VERSION = 2.8.3
+HADOOP_29_VERSION = 2.9.0
+HADOOP_30_VERSION = 3.0.0
 PROTOBUF_VERSION = 2.5.0
 
 DOCKER = docker
@@ -11,18 +14,18 @@ DOCKER_REPO = danisla/hadoop
 
 all: build
 
-### Build hadoop 2.6 and 2.7 images with native libs.
-build: build-$(HADOOP_26_VERSION) build-$(HADOOP_27_VERSION)
+### Build hadoop versioned images with native libs.
+build: build-$(HADOOP_26_VERSION) build-$(HADOOP_27_VERSION) build-$(HADOOP_28_VERSION) build-$(HADOOP_29_VERSION) build-$(HADOOP_30_VERSION)
 build-%: hadoop-native-%.tar
 	$(DOCKER) build -t hadoop:$* \
 	--build-arg HADOOP_VERSION=$* \
 	.
 
-tag: tag-$(HADOOP_26_VERSION) tag-$(HADOOP_27_VERSION)
+tag: tag-$(HADOOP_26_VERSION) tag-$(HADOOP_27_VERSION) tag-$(HADOOP_28_VERSION) tag-$(HADOOP_29_VERSION) tag-$(HADOOP_30_VERSION)
 tag-%:
 	$(DOCKER) tag hadoop:$* $(DOCKER_REPO):$*
 
-push: push-$(HADOOP_26_VERSION) push-$(HADOOP_27_VERSION)
+push: push-$(HADOOP_26_VERSION) push-$(HADOOP_27_VERSION) push-$(HADOOP_28_VERSION) push-$(HADOOP_29_VERSION) push-$(HADOOP_30_VERSION)
 push-%:
 	$(DOCKER) push $(DOCKER_REPO):$*
 
